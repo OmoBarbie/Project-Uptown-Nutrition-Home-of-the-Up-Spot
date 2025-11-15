@@ -1,0 +1,26 @@
+{
+  "name": "tayo-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "admin",
+    "client",
+    "components"
+  ],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "dev:admin": "bun run --filter admin dev",
+    "dev:client": "bun run --filter client dev",
+    "build": "bun run --filter '*' build",
+    "build:admin": "bun run --filter admin build",
+    "build:client": "bun run --filter client build",
+    "start": "bun run --filter '*' start",
+    "start:admin": "bun run --filter admin start",
+    "start:client": "bun run --filter client start",
+    "lint": "bun run --filter '*' lint",
+    "clean": "rm -rf node_modules admin/node_modules client/node_modules components/node_modules"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}
