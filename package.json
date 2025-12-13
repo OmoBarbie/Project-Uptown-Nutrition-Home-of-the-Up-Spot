@@ -22,5 +22,9 @@
   },
   "devDependencies": {
     "bun-types": "latest"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "clsx": "^2.1.1"
   }
 }
