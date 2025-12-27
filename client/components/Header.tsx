@@ -15,6 +15,7 @@ import { Container } from "@/components/Container";
 import { UrlObject } from "url";
 import { useCart } from "@/app/context/CartContext";
 import { SearchModal } from "@/components/SearchModal";
+import { UserMenu } from "@/app/components/UserMenu";
 
 function MobileNavLink({
   href,
@@ -200,12 +201,9 @@ export function Header() {
                 </span>
               )}
             </Link>
-            <Button
-              href="#shop"
-              className="hidden md:inline-flex"
-            >
-              Shop Now
-            </Button>
+            <div className="hidden md:block">
+              <UserMenu />
+            </div>
             <div className="-mr-1 md:hidden">
               <MobileNavigation />
             </div>

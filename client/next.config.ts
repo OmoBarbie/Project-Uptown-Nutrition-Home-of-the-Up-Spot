@@ -3,10 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  typedRoutes: true,
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  typedRoutes: false, // Disabled temporarily due to route group type issues
   reactCompiler: true,
   turbopack: {
     root: path.join(__dirname, ".."),
@@ -14,7 +11,7 @@ const nextConfig: NextConfig = {
   experimental: {
     turbopackFileSystemCacheForDev: true,
   },
-  transpilePackages: ["@tayo/components"],
+  transpilePackages: ["@tayo/components", "@tayo/database"],
 };
 
 export default nextConfig;
