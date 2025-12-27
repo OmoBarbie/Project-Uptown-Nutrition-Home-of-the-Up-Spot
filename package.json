@@ -5,7 +5,8 @@
   "workspaces": [
     "admin",
     "client",
-    "components"
+    "components",
+    "database"
   ],
   "scripts": {
     "dev": "bun run --filter '*' dev",
@@ -18,9 +19,18 @@
     "start:admin": "bun run --filter admin start",
     "start:client": "bun run --filter client start",
     "lint": "bun run --filter '*' lint",
-    "clean": "rm -rf node_modules admin/node_modules client/node_modules components/node_modules"
+    "db:generate": "bun run --filter @tayo/database db:generate",
+    "db:migrate": "bun run --filter @tayo/database db:migrate",
+    "db:push": "bun run --filter @tayo/database db:push",
+    "db:studio": "bun run --filter @tayo/database db:studio",
+    "db:seed": "bun run --filter @tayo/database db:seed",
+    "clean": "rm -rf node_modules admin/node_modules client/node_modules components/node_modules database/node_modules"
   },
   "devDependencies": {
     "bun-types": "latest"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "clsx": "^2.1.1"
   }
 }
