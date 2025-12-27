@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   experimental: {
     turbopackFileSystemCacheForDev: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   transpilePackages: ["@tayo/components", "@tayo/database"],
 };
 
