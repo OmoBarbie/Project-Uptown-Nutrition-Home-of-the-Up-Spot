@@ -150,13 +150,7 @@ export function ProductsList({ products, categories }: ProductsListProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  addItem({
-                    id: parseInt(product.id),
-                    name: product.name,
-                    price: `$${product.price}`,
-                    imageSrc: product.emoji,
-                    imageAlt: product.name,
-                  });
+                  addItem(product.id);
                 }}
                 className="relative z-10 mt-4 w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition-colors"
               >
