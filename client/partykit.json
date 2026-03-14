@@ -1,0 +1,7 @@
+{
+  "name": "uptown-nutrition-client",
+  "main": "partykit/cart-sync.ts",
+  "parties": {
+    "cart": "partykit/cart-sync.ts"
+  }
+}

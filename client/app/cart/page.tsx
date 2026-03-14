@@ -42,7 +42,7 @@ export default function CartPage() {
                   <h2 className="sr-only">Items in your shopping cart</h2>
 
                   <ul role="list" className="divide-y divide-slate-200 dark:divide-slate-700 border-t border-b border-slate-200 dark:border-slate-700">
-                    {optimisticItems.map((product, productIdx) => (
+                    {optimisticItems.map((product) => (
                     <li key={product.id} className="flex py-6 sm:py-10">
                       <div className="shrink-0">
                         <div className="size-24 sm:size-32 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 flex items-center justify-center text-5xl sm:text-6xl">
@@ -59,8 +59,6 @@ export default function CartPage() {
                                   {product.name}
                                 </Link>
                               </h3>
-                              {product.flavor && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{product.flavor}</p>}
-                              {product.size && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{product.size}</p>}
                             </div>
 
                             <p className="text-right text-sm font-medium text-slate-900 dark:text-white">{product.price}</p>
@@ -69,7 +67,7 @@ export default function CartPage() {
                           <div className="mt-4 flex items-center sm:absolute sm:top-0 sm:left-1/2 sm:mt-0 sm:block">
                             <div className="inline-grid w-full max-w-16 grid-cols-1">
                               <select
-                                name={`quantity-${productIdx}`}
+                                name={`quantity-${product.id}`}
                                 value={product.quantity}
                                 onChange={(e) => updateQuantity(product.id, parseInt(e.target.value))}
                                 aria-label={`Quantity, ${product.name}`}
@@ -135,13 +133,12 @@ export default function CartPage() {
                   </div>
                 </div>
                 <div className="mt-10">
-                  <button
-                    type="submit"
-                    disabled={isPending}
-                    className="w-full rounded-md border border-transparent bg-emerald-600 px-4 py-3 text-base font-medium text-white shadow-xs hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-50 dark:focus:ring-offset-slate-950 focus:outline-hidden disabled:opacity-50"
+                  <Link
+                    href="/checkout"
+                    className="block w-full rounded-md border border-transparent bg-emerald-600 px-4 py-3 text-base font-medium text-white text-center shadow-xs hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-50 dark:focus:ring-offset-slate-950 focus:outline-hidden"
                   >
                     Checkout
-                  </button>
+                  </Link>
                 </div>
 
                 <div className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
