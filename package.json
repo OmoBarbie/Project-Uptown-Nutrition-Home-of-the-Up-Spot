@@ -6,7 +6,8 @@
     "admin",
     "client",
     "components",
-    "database"
+    "database",
+    "email"
   ],
   "scripts": {
     "dev": "bun run --filter '*' dev",
