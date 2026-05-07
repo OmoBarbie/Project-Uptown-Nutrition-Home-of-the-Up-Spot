@@ -67,16 +67,16 @@ export async function updateOrderStatus(
       .where(eq(schema.orders.id, orderId))
       .limit(1);
 
-    const updateData: any = {
-      status,
+    const updateData: Partial<typeof schema.orders.$inferInsert> = {
+      status: status as typeof schema.orders.$inferInsert['status'],
       updatedAt: new Date(),
     };
 
     // Add timestamps for specific status changes
-    if (status === 'confirmed' && !prevState.success) {
+    if (status === 'confirmed' && !oldOrder.confirmedAt) {
       updateData.confirmedAt = new Date();
     } else if (status === 'delivered') {
-      updateData.deliveredAt = new Date();
+      updateData.completedAt = new Date();
     } else if (status === 'cancelled') {
       updateData.cancelledAt = new Date();
     }

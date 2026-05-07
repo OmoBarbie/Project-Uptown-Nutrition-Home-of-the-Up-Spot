@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { updateProfile, type UpdateProfileState } from "./actions";
 import { SubmitButton } from "./submit-button";
 
@@ -14,6 +14,41 @@ const initialState: UpdateProfileState = {
   message: undefined,
   errors: undefined,
 };
+
+function VerificationBanner({ email }: { email: string }) {
+  const [sent, setSent] = useState(false);
+  const [resendError, setResendError] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  function handleResend() {
+    setResendError('');
+    startTransition(async () => {
+      const { error } = await authClient.sendVerificationEmail({ email, callbackURL: '/account' });
+      if (error) { setResendError('Failed to send. Please try again.'); return; }
+      setSent(true);
+    });
+  }
+
+  return (
+    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center justify-between mb-6">
+      <div>
+        <p className="text-sm text-yellow-800">Please verify your email address.</p>
+        {resendError && <p className="text-xs text-red-600 mt-1">{resendError}</p>}
+      </div>
+      {sent ? (
+        <span className="text-sm text-yellow-700">Sent!</span>
+      ) : (
+        <button
+          onClick={handleResend}
+          disabled={isPending}
+          className="text-sm text-yellow-700 underline disabled:opacity-50"
+        >
+          {isPending ? 'Sending…' : 'Resend email'}
+        </button>
+      )}
+    </div>
+  );
+}
 
 function AccountContent() {
   const { data: session, isPending, refetch } = useSession();
@@ -65,15 +100,7 @@ function AccountContent() {
             <div className="mt-10 space-y-8">
               {/* Email Verification Banner */}
               {!session?.user?.emailVerified && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center justify-between mb-6">
-                  <p className="text-sm text-yellow-800">Please verify your email address.</p>
-                  <button
-                    onClick={() => authClient.sendVerificationEmail({ email: session.user.email, callbackURL: '/account' })}
-                    className="text-sm text-yellow-700 underline"
-                  >
-                    Resend email
-                  </button>
-                </div>
+                <VerificationBanner email={session.user.email} />
               )}
 
               {/* Success/Error Message */}

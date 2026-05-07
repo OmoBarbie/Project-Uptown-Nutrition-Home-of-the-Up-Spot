@@ -115,12 +115,17 @@ export async function createPaymentIntent(
 
     // Insert order items from database cart
     await db.insert(schema.orderItems).values(
-      dbCartItems.map((item: any) => ({
-        orderId: order.id,
-        productId: item.productId,
-        quantity: item.quantity,
-        price: (parseFloat(item.product.price) * item.quantity).toFixed(2),
-      }))
+      dbCartItems.map((item: { productId: string; quantity: number; product: { name: string; price: string } }) => {
+        const unitPrice = parseFloat(item.product.price);
+        return {
+          orderId: order.id,
+          productId: item.productId,
+          productName: item.product.name,
+          quantity: item.quantity,
+          unitPrice: unitPrice.toFixed(2),
+          subtotal: (unitPrice * item.quantity).toFixed(2),
+        };
+      })
     );
 
     // Clear cart after creating order
@@ -142,9 +147,18 @@ export async function createPaymentIntent(
 
 export async function confirmOrder(orderId: string) {
   try {
+    const headersList = await headers();
+    const session = await auth.api.getSession({ headers: headersList });
     const db = getDb();
 
-    await db
+    // Verify ownership: only the order owner (or guest orders with no userId) can confirm
+    const existing = await db.query.orders.findFirst({
+      where: eq(schema.orders.id, orderId),
+    });
+    if (!existing) throw new Error('Order not found');
+    if (existing.userId && existing.userId !== session?.user.id) throw new Error('Unauthorized');
+
+    const [confirmed] = await db
       .update(schema.orders)
       .set({
         status: 'confirmed',
@@ -152,26 +166,24 @@ export async function confirmOrder(orderId: string) {
         confirmedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(schema.orders.id, orderId));
+      .where(eq(schema.orders.id, orderId))
+      .returning();
 
-    const fullOrder = await db.query.orders.findFirst({
-      where: eq(schema.orders.id, orderId),
-      with: { items: true },
-    });
+    const items = await db.query.orderItems.findMany({ where: eq(schema.orderItems.orderId, orderId) });
 
-    if (fullOrder?.customerEmail) {
-      await sendOrderConfirmation(fullOrder.customerEmail, {
-        orderNumber: fullOrder.orderNumber,
-        items: fullOrder.items.map((i) => ({
+    if (confirmed.customerEmail) {
+      await sendOrderConfirmation(confirmed.customerEmail, {
+        orderNumber: confirmed.orderNumber,
+        items: items.map((i) => ({
           name: i.productName,
           quantity: i.quantity,
           unitPrice: i.unitPrice,
         })),
-        subtotal: fullOrder.subtotal,
-        tax: fullOrder.tax,
-        deliveryFee: fullOrder.deliveryFee,
-        total: fullOrder.total,
-        deliveryAddress: fullOrder.customerName ?? '',
+        subtotal: confirmed.subtotal,
+        tax: confirmed.tax,
+        deliveryFee: confirmed.deliveryFee,
+        total: confirmed.total,
+        deliveryAddress: confirmed.customerName ?? '',
       });
     }
 
