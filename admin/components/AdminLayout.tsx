@@ -14,6 +14,7 @@ import {
   UsersIcon,
   StarIcon,
   ClipboardDocumentListIcon,
+  TicketIcon,
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import { useSession, signOut } from '@/lib/auth-client';
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Orders', href: '/orders', icon: ShoppingBagIcon },
   { name: 'Users', href: '/users', icon: UsersIcon },
   { name: 'Reviews', href: '/reviews', icon: StarIcon },
+  { name: 'Coupons', href: '/coupons', icon: TicketIcon },
   { name: 'Audit Logs', href: '/audit-logs', icon: ClipboardDocumentListIcon },
 ];
 
