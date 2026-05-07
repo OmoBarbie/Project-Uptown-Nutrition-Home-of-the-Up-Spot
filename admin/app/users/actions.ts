@@ -7,7 +7,10 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { createAuditLog } from '@/lib/audit';
 
-export async function updateUserRole(userId: string, role: 'customer' | 'admin' | 'super_admin') {
+export async function updateUserRole(userId: string, formData: FormData) {
+  const role = formData.get('role') as 'customer' | 'admin' | 'super_admin';
+  if (!role || !['customer', 'admin', 'super_admin'].includes(role)) throw new Error('Invalid role');
+
   const db = getDb();
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });

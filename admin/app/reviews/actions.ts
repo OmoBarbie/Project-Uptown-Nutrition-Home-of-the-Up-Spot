@@ -3,6 +3,9 @@
 import { getDb, schema } from '@tayo/database';
 import { eq, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { createAuditLog } from '@/lib/audit';
 
 async function recalculateProductRatings(productId: string) {
   const db = getDb();
@@ -50,6 +53,9 @@ async function recalculateProductRatings(productId: string) {
 
 export async function approveReview(reviewId: string) {
   const db = getDb();
+  const headersList = await headers();
+  const session = await auth.api.getSession({ headers: headersList });
+
   const review = await db.query.reviews.findFirst({ where: eq(schema.reviews.id, reviewId) });
   if (!review) return;
   await db
@@ -57,29 +63,56 @@ export async function approveReview(reviewId: string) {
     .set({ isApproved: true, updatedAt: new Date() })
     .where(eq(schema.reviews.id, reviewId));
   await recalculateProductRatings(review.productId);
+  if (session) {
+    await createAuditLog(session.user.id, {
+      action: 'update', entityType: 'review', entityId: reviewId,
+      changes: { after: { isApproved: true } },
+    });
+  }
   revalidatePath('/reviews');
 }
 
 export async function rejectReview(reviewId: string) {
   const db = getDb();
+  const headersList = await headers();
+  const session = await auth.api.getSession({ headers: headersList });
+
   const review = await db.query.reviews.findFirst({ where: eq(schema.reviews.id, reviewId) });
   if (!review) return;
   await db.delete(schema.reviews).where(eq(schema.reviews.id, reviewId));
   await recalculateProductRatings(review.productId);
+  if (session) {
+    await createAuditLog(session.user.id, {
+      action: 'delete', entityType: 'review', entityId: reviewId,
+      changes: { before: { productId: review.productId, rating: review.rating } },
+    });
+  }
   revalidatePath('/reviews');
 }
 
 export async function featureReview(reviewId: string, isFeatured: boolean) {
   const db = getDb();
+  const headersList = await headers();
+  const session = await auth.api.getSession({ headers: headersList });
+
   await db
     .update(schema.reviews)
     .set({ isFeatured, updatedAt: new Date() })
     .where(eq(schema.reviews.id, reviewId));
+  if (session) {
+    await createAuditLog(session.user.id, {
+      action: 'update', entityType: 'review', entityId: reviewId,
+      changes: { after: { isFeatured } },
+    });
+  }
   revalidatePath('/reviews');
 }
 
 export async function bulkApproveReviews(reviewIds: string[]) {
   const db = getDb();
+  const headersList = await headers();
+  const session = await auth.api.getSession({ headers: headersList });
+
   for (const id of reviewIds) {
     const review = await db.query.reviews.findFirst({ where: eq(schema.reviews.id, id) });
     if (!review) continue;
@@ -88,6 +121,12 @@ export async function bulkApproveReviews(reviewIds: string[]) {
       .set({ isApproved: true, updatedAt: new Date() })
       .where(eq(schema.reviews.id, id));
     await recalculateProductRatings(review.productId);
+  }
+  if (session && reviewIds.length > 0) {
+    await createAuditLog(session.user.id, {
+      action: 'update', entityType: 'review', entityId: reviewIds[0],
+      changes: { after: { bulkApproved: reviewIds.length } },
+    });
   }
   revalidatePath('/reviews');
 }

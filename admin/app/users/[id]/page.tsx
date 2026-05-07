@@ -24,12 +24,15 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
       <div className="grid grid-cols-2 gap-6 mb-8">
         <div className="border rounded-lg p-4">
           <p className="text-sm font-medium mb-2">Role</p>
-          <form action={updateUserRole.bind(null, user.id, 'customer')}>
+          <form action={updateUserRole.bind(null, user.id)} className="flex gap-2 items-center">
             <select name="role" defaultValue={user.role ?? 'customer'} className="border rounded-md px-2 py-1 text-sm">
               <option value="customer">Customer</option>
               <option value="admin">Admin</option>
               <option value="super_admin">Super Admin</option>
             </select>
+            <button type="submit" className="text-sm px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Update
+            </button>
           </form>
         </div>
         <div className="border rounded-lg p-4">
