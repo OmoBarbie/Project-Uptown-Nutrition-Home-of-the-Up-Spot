@@ -14,8 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Uptown Nutrition",
-  description: "healthy treats, meals, and snacks just for you",
+  title: {
+    default: 'Tayo — Fresh Groceries Delivered',
+    template: '%s | Tayo',
+  },
+  description: 'Shop fresh, healthy groceries and get them delivered to your door.',
+  openGraph: {
+    siteName: 'Tayo',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
