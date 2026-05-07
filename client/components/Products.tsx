@@ -50,7 +50,29 @@ export function Products({ categories }: Props) {
     setTimeout(() => setAddedId(id => id === item.id ? null : id), 2000)
   }
 
-  if (categories.length === 0) return null
+  if (categories.length === 0) {
+    return (
+      <section
+        id="products"
+        aria-label="Featured Products"
+        className="relative overflow-hidden bg-cream-200 border-t border-sand py-20 sm:py-32"
+      >
+        <Container className="relative text-center">
+          <div className="text-5xl mb-6">🥗</div>
+          <h2 className="font-display text-3xl font-medium text-charcoal mb-3">Menu Coming Soon</h2>
+          <p className="text-sm text-foreground/55 max-w-sm mx-auto mb-8">
+            We're stocking the menu. Stop by in person or check back soon for our full selection of smoothies, bowls, and snacks.
+          </p>
+          <Link
+            href="/contact"
+            className="inline-block bg-forest-600 text-cream-100 px-6 py-3 text-sm font-semibold tracking-wide hover:bg-forest-700 transition-colors"
+          >
+            Contact Us
+          </Link>
+        </Container>
+      </section>
+    )
+  }
 
   return (
     <section
