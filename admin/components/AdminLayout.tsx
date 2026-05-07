@@ -6,6 +6,7 @@ import {
   ShoppingBagIcon,
   CubeIcon,
   ChartBarIcon,
+  TagIcon,
   Bars3Icon,
   XMarkIcon,
   ArrowRightOnRectangleIcon,
@@ -17,6 +18,7 @@ import { useSession, signOut } from '@/lib/auth-client';
 const navigation = [
   { name: 'Dashboard', href: '/', icon: ChartBarIcon },
   { name: 'Products', href: '/products', icon: CubeIcon },
+  { name: 'Categories', href: '/categories', icon: TagIcon },
   { name: 'Orders', href: '/orders', icon: ShoppingBagIcon },
 ];
 
