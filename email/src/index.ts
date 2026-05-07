@@ -12,3 +12,5 @@ export function getResend(): Resend {
 }
 
 export const FROM = process.env.RESEND_FROM_EMAIL ?? 'Tayo <no-reply@tayo.store>';
+
+export * from './send';
