@@ -36,6 +36,12 @@ export const auth = betterAuth({
     additionalFields: {
       role: { type: 'string', required: false, defaultValue: 'customer', input: false },
       phone: { type: 'string', required: false },
+      isBanned: {
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+        input: false,
+      },
     },
   },
   trustedOrigins: [
