@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { createAuditLog } from '@/lib/audit';
+import { sendOrderStatusUpdate } from '@tayo/email';
 
 export type OrderStatusFormState = {
   success?: boolean;
@@ -84,6 +85,13 @@ export async function updateOrderStatus(
       .update(schema.orders)
       .set(updateData)
       .where(eq(schema.orders.id, orderId));
+
+    if (['out_for_delivery', 'delivered'].includes(status)) {
+      const order = await db.query.orders.findFirst({ where: eq(schema.orders.id, orderId) });
+      if (order?.customerEmail) {
+        await sendOrderStatusUpdate(order.customerEmail, order.orderNumber, status);
+      }
+    }
 
     // Audit log
     await createAuditLog(session.user.id, {
