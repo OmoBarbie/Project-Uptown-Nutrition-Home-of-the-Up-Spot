@@ -22,6 +22,9 @@ export default function LoginPage() {
 
         <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <SignInForm />
+          <p className="text-sm text-center mt-2">
+            <a href="/forgot-password" className="text-green-700 underline">Forgot password?</a>
+          </p>
         </div>
 
         <div className="text-center">
