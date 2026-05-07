@@ -23,7 +23,7 @@ export default async function DashboardPage() {
       <section>
         <h2 className="text-lg font-semibold mb-3">Recent Orders</h2>
         <table className="w-full text-sm">
-          <thead><tr className="border-b text-left"><th className="pb-2">Order #</th><th className="pb-2">Customer</th><th className="pb-2">Total</th><th className="pb-2">Status</th></tr></thead>
+          <thead><tr className="border-b text-left"><th className="pb-2">Order #</th><th className="pb-2">Customer</th><th className="pb-2">Total</th><th className="pb-2">Status</th><th className="pb-2">Date</th></tr></thead>
           <tbody>
             {today.recentOrders.map((o) => (
               <tr key={o.id} className="border-b">
@@ -31,6 +31,7 @@ export default async function DashboardPage() {
                 <td className="py-2">{o.customerName}</td>
                 <td className="py-2">${o.total}</td>
                 <td className="py-2 capitalize">{o.status.replace(/_/g, ' ')}</td>
+                <td className="py-2 text-gray-500">{o.createdAt.toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
