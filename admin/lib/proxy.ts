@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "./auth";
+import { authRatelimit, apiRatelimit } from '@/lib/rate-limit';
 
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = ["/login", "/api/auth"];
@@ -11,6 +12,29 @@ function isPublicRoute(pathname: string): boolean {
 
 export async function authMiddleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+    request.headers.get('x-real-ip') ??
+    '127.0.0.1';
+
+  if (pathname.startsWith('/api/auth')) {
+    const { success, reset } = await authRatelimit.limit(ip);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((reset - Date.now()) / 1000)) } }
+      );
+    }
+  } else if (pathname.startsWith('/api/')) {
+    const { success, reset } = await apiRatelimit.limit(ip);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((reset - Date.now()) / 1000)) } }
+      );
+    }
+  }
 
   // Allow public routes
   if (isPublicRoute(pathname)) {

@@ -6,4 +6,5 @@ export * from './orders';
 export * from './reviews';
 export * from './auth';
 export * from './audit';
+export * from './coupons';
 export * from './relations';

@@ -1,90 +1,119 @@
-"use client";
+'use client'
 
-import { useState, useActionState, useEffect } from "react";
+import type { CheckoutState } from './actions'
+import type { CartItem } from '@/app/context/CartContext'
 import {
-  useStripe,
-  useElements,
   PaymentElement,
-  AddressElement,
-} from "@stripe/react-stripe-js";
-import { createPaymentIntent, type CheckoutState } from "./actions";
-import type { CartItem } from "@/app/context/CartContext";
+  useElements,
+  useStripe,
+} from '@stripe/react-stripe-js'
+import { useActionState, useEffect, useState } from 'react'
+import { createPaymentIntent } from './actions'
+import { CouponInput } from './coupon-input'
 
 const initialState: CheckoutState = {
   success: undefined,
   message: undefined,
   errors: undefined,
-};
+}
 
-type CheckoutFormProps = {
-  cartItems: CartItem[];
-  subtotal: number;
-  tax: number;
-  deliveryFee: number;
-  total: number;
-  userEmail?: string;
-  userName?: string;
-};
+interface CheckoutFormProps {
+  cartItems: CartItem[]
+  subtotal: number
+  tax: number
+  deliveryFee: number
+  total: number
+  userEmail?: string
+  userName?: string
+}
 
 export function CheckoutForm({
-  cartItems,
+  cartItems: _cartItems,
   subtotal,
-  tax,
-  deliveryFee,
+  tax: _tax,
+  deliveryFee: _deliveryFee,
   total,
   userEmail,
   userName,
 }: CheckoutFormProps) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [state, formAction] = useActionState(createPaymentIntent, initialState);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentReady, setPaymentReady] = useState(false);
+  const stripe = useStripe()
+  const elements = useElements()
+  const [state, formAction] = useActionState(createPaymentIntent, initialState)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [paymentReady, setPaymentReady] = useState(false)
+  const [discount, setDiscount] = useState(0)
+  const [couponCode, setCouponCode] = useState('')
 
   // When we get a client secret, we can show the payment element
   useEffect(() => {
     if (state.clientSecret && stripe) {
-      setPaymentReady(true);
+      setPaymentReady(true)
     }
-  }, [state.clientSecret, stripe]);
+  }, [state.clientSecret, stripe])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault()
 
     if (!stripe || !elements) {
-      return;
+      return
     }
 
     // If we don't have a client secret yet, create the payment intent first
     if (!state.clientSecret) {
-      const formData = new FormData(event.currentTarget);
-      formAction(formData);
-      return;
+      const formData = new FormData(event.currentTarget)
+      formAction(formData)
+      return
     }
 
     // Process the payment
-    setIsProcessing(true);
+    setIsProcessing(true)
 
     try {
+      // clientSecret is required when Elements was initialized in deferred mode (mode: 'payment')
       const { error } = await stripe.confirmPayment({
         elements,
+        clientSecret: state.clientSecret!,
         confirmParams: {
           return_url: `${window.location.origin}/orders/${state.orderId}?success=true`,
         },
-      });
+      })
 
       if (error) {
-        console.error(error);
-        setIsProcessing(false);
+        console.error(error)
+        setIsProcessing(false)
       }
-    } catch (error) {
-      console.error('Payment error:', error);
-      setIsProcessing(false);
     }
-  };
+    catch (error) {
+      console.error('Payment error:', error)
+      setIsProcessing(false)
+    }
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Hidden coupon fields passed to server action */}
+      <input type="hidden" name="discount" value={discount} />
+      <input type="hidden" name="couponCode" value={couponCode} />
+
+      <div className="bg-white dark:bg-slate-900 rounded-lg p-6 shadow-sm ring-1 ring-slate-900/5">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+          Coupon Code
+        </h2>
+        <CouponInput
+          subtotal={subtotal}
+          onApply={(d, c) => {
+            setDiscount(d)
+            setCouponCode(c)
+          }}
+        />
+        {discount > 0 && (
+          <p className="mt-2 text-sm text-green-700">
+            Discount applied: -$
+            {discount.toFixed(2)}
+          </p>
+        )}
+      </div>
+
       <div className="bg-white dark:bg-slate-900 rounded-lg p-6 shadow-sm ring-1 ring-slate-900/5">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
           Contact Information
@@ -161,7 +190,7 @@ export function CheckoutForm({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="city" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 City
@@ -235,5 +264,5 @@ export function CheckoutForm({
         Your payment information is secure and encrypted
       </p>
     </form>
-  );
+  )
 }

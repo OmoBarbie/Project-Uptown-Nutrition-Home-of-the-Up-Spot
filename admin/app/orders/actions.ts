@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { createAuditLog } from '@/lib/audit';
+import { sendOrderStatusUpdate } from '@tayo/email';
 
 export type OrderStatusFormState = {
   success?: boolean;
@@ -66,16 +67,16 @@ export async function updateOrderStatus(
       .where(eq(schema.orders.id, orderId))
       .limit(1);
 
-    const updateData: any = {
-      status,
+    const updateData: Partial<typeof schema.orders.$inferInsert> = {
+      status: status as typeof schema.orders.$inferInsert['status'],
       updatedAt: new Date(),
     };
 
     // Add timestamps for specific status changes
-    if (status === 'confirmed' && !prevState.success) {
+    if (status === 'confirmed' && !oldOrder.confirmedAt) {
       updateData.confirmedAt = new Date();
     } else if (status === 'delivered') {
-      updateData.deliveredAt = new Date();
+      updateData.completedAt = new Date();
     } else if (status === 'cancelled') {
       updateData.cancelledAt = new Date();
     }
@@ -84,6 +85,13 @@ export async function updateOrderStatus(
       .update(schema.orders)
       .set(updateData)
       .where(eq(schema.orders.id, orderId));
+
+    if (['out_for_delivery', 'delivered'].includes(status)) {
+      const order = await db.query.orders.findFirst({ where: eq(schema.orders.id, orderId) });
+      if (order?.customerEmail) {
+        await sendOrderStatusUpdate(order.customerEmail, order.orderNumber, status);
+      }
+    }
 
     // Audit log
     await createAuditLog(session.user.id, {

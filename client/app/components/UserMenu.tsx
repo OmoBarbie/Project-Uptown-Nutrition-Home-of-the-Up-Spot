@@ -1,53 +1,53 @@
-"use client";
+'use client'
 
-import { useSession, signOut } from "@/lib/auth-client";
-import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
 import {
   Popover,
+  PopoverBackdrop,
   PopoverButton,
   PopoverPanel,
-  PopoverBackdrop
-} from "@headlessui/react";
-import { UserCircleIcon } from "@heroicons/react/24/outline";
+} from '@headlessui/react'
+import { UserCircleIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
+import { signOut, useSession } from '@/lib/auth-client'
 
 export function UserMenu() {
-  const { data: session, isPending } = useSession();
-  const [isSigningOut, setIsSigningOut] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { data: session, isPending } = useSession()
+  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [isHovering, setIsHovering] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleSignOut = async () => {
-    setIsSigningOut(true);
-    await signOut();
-    window.location.href = "/";
-  };
+    setIsSigningOut(true)
+    await signOut()
+    window.location.href = '/'
+  }
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+      clearTimeout(timeoutRef.current)
     }
-    setIsHovering(true);
-  };
+    setIsHovering(true)
+  }
 
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
-      setIsHovering(false);
-    }, 200);
-  };
+      setIsHovering(false)
+    }, 200)
+  }
 
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        clearTimeout(timeoutRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   if (isPending) {
     return (
       <div className="h-6 w-6 animate-pulse rounded-full bg-slate-200" />
-    );
+    )
   }
 
   if (!session) {
@@ -66,7 +66,7 @@ export function UserMenu() {
           Sign up
         </Link>
       </div>
-    );
+    )
   }
 
   return (
@@ -120,7 +120,7 @@ export function UserMenu() {
                     disabled={isSigningOut}
                     className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition disabled:opacity-50"
                   >
-                    {isSigningOut ? "Signing out..." : "Sign out"}
+                    {isSigningOut ? 'Signing out...' : 'Sign out'}
                   </button>
                 </div>
               </div>
@@ -129,5 +129,5 @@ export function UserMenu() {
         </>
       )}
     </Popover>
-  );
+  )
 }

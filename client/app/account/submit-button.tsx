@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import { useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom'
 
 export function SubmitButton() {
-  const { pending } = useFormStatus();
+  const { pending } = useFormStatus()
 
   return (
     <button
@@ -13,5 +13,5 @@ export function SubmitButton() {
     >
       {pending ? 'Saving...' : 'Save changes'}
     </button>
-  );
+  )
 }

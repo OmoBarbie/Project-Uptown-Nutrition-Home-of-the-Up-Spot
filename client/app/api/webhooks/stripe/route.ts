@@ -1,66 +1,69 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-import { getDb, schema } from '@tayo/database';
-import { eq } from 'drizzle-orm';
-import { headers } from 'next/headers';
+import type { NextRequest } from 'next/server'
+import { getDb, schema } from '@tayo/database'
+import { sendOrderConfirmation } from '@tayo/email'
+import { eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { NextResponse } from 'next/server'
+import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
-});
+})
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text();
-    const headersList = await headers();
-    const signature = headersList.get('stripe-signature');
+    const body = await request.text()
+    const headersList = await headers()
+    const signature = headersList.get('stripe-signature')
 
     if (!signature) {
-      console.error('No Stripe signature found');
+      console.error('No Stripe signature found')
       return NextResponse.json(
         { error: 'No signature' },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
-    let event: Stripe.Event;
+    let event: Stripe.Event
 
     try {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
-        webhookSecret
-      );
-    } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+        webhookSecret,
+      )
+    }
+    catch (err) {
+      console.error('Webhook signature verification failed:', err)
       return NextResponse.json(
         { error: 'Invalid signature' },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
-    const db = getDb();
+    const db = getDb()
 
     // Handle the event
     switch (event.type) {
       case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log('Payment succeeded:', paymentIntent.id);
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+        console.log('Payment succeeded:', paymentIntent.id)
 
         // Find the order by payment intent ID
         const [order] = await db
           .select()
           .from(schema.orders)
           .where(eq(schema.orders.paymentIntentId, paymentIntent.id))
-          .limit(1);
+          .limit(1)
 
         if (!order) {
-          console.error('Order not found for payment intent:', paymentIntent.id);
+          console.error('Order not found for payment intent:', paymentIntent.id)
           return NextResponse.json(
             { error: 'Order not found' },
-            { status: 404 }
-          );
+            { status: 404 },
+          )
         }
 
         // Update order status to confirmed and payment succeeded
@@ -72,26 +75,52 @@ export async function POST(request: NextRequest) {
             confirmedAt: new Date(),
             updatedAt: new Date(),
           })
-          .where(eq(schema.orders.id, order.id));
+          .where(eq(schema.orders.id, order.id))
 
-        console.log('Order confirmed:', order.orderNumber);
+        console.log('Order confirmed:', order.orderNumber)
 
-        // TODO: Send order confirmation email
-        // await sendOrderConfirmationEmail(order);
+        // Send order confirmation email
+        if (order.customerEmail) {
+          const items = await db
+            .select({
+              productName: schema.orderItems.productName,
+              quantity: schema.orderItems.quantity,
+              unitPrice: schema.orderItems.unitPrice,
+            })
+            .from(schema.orderItems)
+            .where(eq(schema.orderItems.orderId, order.id))
 
-        break;
+          await sendOrderConfirmation(order.customerEmail, {
+            orderNumber: order.orderNumber,
+            items: items.map(i => ({
+              name: i.productName,
+              quantity: i.quantity,
+              unitPrice: i.unitPrice,
+            })),
+            subtotal: order.subtotal,
+            tax: order.tax,
+            deliveryFee: order.deliveryFee,
+            total: order.total,
+            deliveryAddress: order.deliveryInstructions ?? order.customerName,
+          }).catch((err) => {
+            // Email failure must not fail the webhook response
+            console.error('Failed to send order confirmation email:', err)
+          })
+        }
+
+        break
       }
 
       case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log('Payment failed:', paymentIntent.id);
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+        console.log('Payment failed:', paymentIntent.id)
 
         // Find the order
         const [order] = await db
           .select()
           .from(schema.orders)
           .where(eq(schema.orders.paymentIntentId, paymentIntent.id))
-          .limit(1);
+          .limit(1)
 
         if (order) {
           // Update order to failed
@@ -101,24 +130,24 @@ export async function POST(request: NextRequest) {
               paymentStatus: 'failed',
               updatedAt: new Date(),
             })
-            .where(eq(schema.orders.id, order.id));
+            .where(eq(schema.orders.id, order.id))
 
-          console.log('Order payment failed:', order.orderNumber);
+          console.log('Order payment failed:', order.orderNumber)
         }
 
-        break;
+        break
       }
 
       case 'payment_intent.canceled': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log('Payment canceled:', paymentIntent.id);
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+        console.log('Payment canceled:', paymentIntent.id)
 
         // Find the order
         const [order] = await db
           .select()
           .from(schema.orders)
           .where(eq(schema.orders.paymentIntentId, paymentIntent.id))
-          .limit(1);
+          .limit(1)
 
         if (order) {
           // Update order to cancelled
@@ -130,18 +159,18 @@ export async function POST(request: NextRequest) {
               cancelledAt: new Date(),
               updatedAt: new Date(),
             })
-            .where(eq(schema.orders.id, order.id));
+            .where(eq(schema.orders.id, order.id))
 
-          console.log('Order cancelled:', order.orderNumber);
+          console.log('Order cancelled:', order.orderNumber)
         }
 
-        break;
+        break
       }
 
       case 'charge.refunded': {
-        const charge = event.data.object as Stripe.Charge;
-        const paymentIntentId = charge.payment_intent as string;
-        console.log('Charge refunded:', charge.id);
+        const charge = event.data.object as Stripe.Charge
+        const paymentIntentId = charge.payment_intent as string
+        console.log('Charge refunded:', charge.id)
 
         if (paymentIntentId) {
           // Find the order
@@ -149,7 +178,7 @@ export async function POST(request: NextRequest) {
             .select()
             .from(schema.orders)
             .where(eq(schema.orders.paymentIntentId, paymentIntentId))
-            .limit(1);
+            .limit(1)
 
           if (order) {
             // Update order to refunded
@@ -160,25 +189,26 @@ export async function POST(request: NextRequest) {
                 paymentStatus: 'refunded',
                 updatedAt: new Date(),
               })
-              .where(eq(schema.orders.id, order.id));
+              .where(eq(schema.orders.id, order.id))
 
-            console.log('Order refunded:', order.orderNumber);
+            console.log('Order refunded:', order.orderNumber)
           }
         }
 
-        break;
+        break
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`Unhandled event type: ${event.type}`)
     }
 
-    return NextResponse.json({ received: true });
-  } catch (error) {
-    console.error('Webhook error:', error);
+    return NextResponse.json({ received: true })
+  }
+  catch (error) {
+    console.error('Webhook error:', error)
     return NextResponse.json(
       { error: 'Webhook handler failed' },
-      { status: 500 }
-    );
+      { status: 500 },
+    )
   }
 }

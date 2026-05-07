@@ -1,13 +1,13 @@
-"use client";
+'use client'
 
-import { useSession } from "@/lib/auth-client";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Container } from "@/components/Container";
-import Link from "next/link";
+import Link from 'next/link'
+import { Container } from '@/components/Container'
+import { Footer } from '@/components/Footer'
+import { Header } from '@/components/Header'
+import { useSession } from '@/lib/auth-client'
 
 export default function AddressesPage() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = useSession()
 
   if (isPending) {
     return (
@@ -23,11 +23,11 @@ export default function AddressesPage() {
         </main>
         <Footer />
       </>
-    );
+    )
   }
 
   if (!session) {
-    return null; // Middleware will redirect
+    return null // Middleware will redirect
   }
 
   return (
@@ -66,5 +66,5 @@ export default function AddressesPage() {
       </main>
       <Footer />
     </>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import Link from 'next/link';
+import Link from 'next/link'
+import { Footer } from '@/components/Footer'
+import { Header } from '@/components/Header'
 
 // Mock data - will be replaced with database query
-const getOrderDetails = (id: string) => {
+function getOrderDetails(id: string) {
   const orders: Record<string, any> = {
-    'UN00001': {
+    UN00001: {
       id: 'UN00001',
       number: 'UN00001',
       createdDate: 'December 12, 2024',
@@ -46,7 +46,7 @@ const getOrderDetails = (id: string) => {
         },
       ],
     },
-    'UN00002': {
+    UN00002: {
       id: 'UN00002',
       number: 'UN00002',
       createdDate: 'December 8, 2024',
@@ -85,13 +85,13 @@ const getOrderDetails = (id: string) => {
         },
       ],
     },
-  };
+  }
 
-  return orders[id] || null;
-};
+  return orders[id] || null
+}
 
 export default function InvoicePage({ params }: { params: { id: string } }) {
-  const order = getOrderDetails(params.id);
+  const order = getOrderDetails(params.id)
 
   if (!order) {
     return (
@@ -110,7 +110,7 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
         </main>
         <Footer />
       </>
-    );
+    )
   }
 
   return (
@@ -153,7 +153,10 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
               </div>
               <div className="text-right">
                 <h1 className="text-2xl font-bold text-slate-900">INVOICE</h1>
-                <p className="text-sm text-slate-600 mt-1">#{order.number}</p>
+                <p className="text-sm text-slate-600 mt-1">
+                  #
+                  {order.number}
+                </p>
                 <p className="text-sm text-slate-600">{order.createdDate}</p>
               </div>
             </div>
@@ -176,7 +179,11 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
                     <p className="font-medium text-slate-900">{order.shippingAddress.name}</p>
                     <p>{order.shippingAddress.street}</p>
                     <p>
-                      {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
+                      {order.shippingAddress.city}
+                      ,
+                      {order.shippingAddress.state}
+                      {' '}
+                      {order.shippingAddress.zipCode}
                     </p>
                   </div>
                 </div>
@@ -202,9 +209,13 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
                         <p className="text-sm text-slate-600">{product.description}</p>
                       </td>
                       <td className="text-right py-4 text-sm text-slate-600">{product.quantity}</td>
-                      <td className="text-right py-4 text-sm text-slate-600">${product.price.toFixed(2)}</td>
+                      <td className="text-right py-4 text-sm text-slate-600">
+                        $
+                        {product.price.toFixed(2)}
+                      </td>
                       <td className="text-right py-4 text-sm font-medium text-slate-900">
-                        ${product.total.toFixed(2)}
+                        $
+                        {product.total.toFixed(2)}
                       </td>
                     </tr>
                   ))}
@@ -217,25 +228,36 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-slate-600">Subtotal</dt>
-                  <dd className="font-medium text-slate-900">${order.subtotal.toFixed(2)}</dd>
+                  <dd className="font-medium text-slate-900">
+                    $
+                    {order.subtotal.toFixed(2)}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-slate-600">Shipping</dt>
                   <dd className="font-medium text-slate-900">
-                    {order.shipping === 0 ? (
-                      <span className="text-emerald-600">Free</span>
-                    ) : (
-                      `$${order.shipping.toFixed(2)}`
-                    )}
+                    {order.shipping === 0
+                      ? (
+                          <span className="text-emerald-600">Free</span>
+                        )
+                      : (
+                          `$${order.shipping.toFixed(2)}`
+                        )}
                   </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-slate-600">Tax (10%)</dt>
-                  <dd className="font-medium text-slate-900">${order.tax.toFixed(2)}</dd>
+                  <dd className="font-medium text-slate-900">
+                    $
+                    {order.tax.toFixed(2)}
+                  </dd>
                 </div>
                 <div className="flex justify-between border-t border-slate-200 pt-2 text-base">
                   <dt className="font-semibold text-slate-900">Total</dt>
-                  <dd className="font-bold text-slate-900">${order.total.toFixed(2)}</dd>
+                  <dd className="font-bold text-slate-900">
+                    $
+                    {order.total.toFixed(2)}
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -255,7 +277,8 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
       <Footer />
 
       {/* Print styles */}
-      <style jsx global>{`
+      <style jsx global>
+        {`
         @media print {
           header,
           footer,
@@ -267,7 +290,8 @@ export default function InvoicePage({ params }: { params: { id: string } }) {
             padding: 0 !important;
           }
         }
-      `}</style>
+      `}
+      </style>
     </>
-  );
+  )
 }

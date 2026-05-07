@@ -148,3 +148,6 @@ database/drizzle/
 .vercel
 
 # End of https://www.toptal.com/developers/gitignore/api/node
+
+# Git worktrees
+.worktrees/

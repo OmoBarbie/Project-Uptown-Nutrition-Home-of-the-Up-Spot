@@ -15,7 +15,14 @@ async function getProduct(id: string) {
     .where(eq(schema.products.id, id))
     .limit(1);
 
-  return product;
+  if (!product) return null;
+
+  const variants = await db.query.productVariants.findMany({
+    where: eq(schema.productVariants.productId, id),
+    orderBy: (v, { asc }) => [asc(v.sortOrder)],
+  });
+
+  return { ...product, variants };
 }
 
 async function getCategories() {
@@ -60,6 +67,15 @@ export default async function EditProductPage({ params }: { params: { id: string
             categoryId: product.categoryId,
             emoji: product.emoji || '',
             stock: product.stockQuantity,
+            variants: product.variants.map((v) => ({
+              id: v.id,
+              name: v.name,
+              type: v.type,
+              priceModifier: v.priceModifier,
+              stockQuantity: v.stockQuantity,
+              isActive: v.isActive,
+              sortOrder: v.sortOrder,
+            })),
           }}
           isEdit
         />

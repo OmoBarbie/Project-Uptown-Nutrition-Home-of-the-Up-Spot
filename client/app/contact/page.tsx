@@ -1,6 +1,20 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Container } from "@/components/Container";
+import type { Metadata } from 'next'
+import { Container } from '@/components/Container'
+import { Footer } from '@/components/Footer'
+import { Header } from '@/components/Header'
+
+export const metadata: Metadata = {
+  title: 'Contact & Location',
+  description:
+    'Visit Uptown Nutrition at 4548 N Broadway, Chicago IL 60640. Call 312-899-6358. Open Mon–Sat 7am–7pm, Sun 8am–5pm.',
+  alternates: { canonical: '/contact' },
+  openGraph: {
+    title: 'Contact Uptown Nutrition — Chicago',
+    description:
+      'Visit us at 4548 N Broadway, Chicago IL. Call 312-899-6358 or follow @UPTOWNNUTRITIONCHI on Instagram and Facebook.',
+    url: '/contact',
+  },
+}
 
 export default function ContactPage() {
   return (
@@ -32,7 +46,8 @@ export default function ContactPage() {
                         rel="noopener noreferrer"
                         className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition"
                       >
-                        4548 N Broadway<br />
+                        4548 N Broadway
+                        <br />
                         Chicago, IL
                       </a>
                     </div>
@@ -87,7 +102,8 @@ export default function ContactPage() {
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   title="Uptown Nutrition Location"
-                ></iframe>
+                >
+                </iframe>
               </div>
             </div>
           </div>
@@ -95,5 +111,5 @@ export default function ContactPage() {
       </main>
       <Footer />
     </>
-  );
+  )
 }

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { OrderStatusForm } from './order-status-form';
+import { RefundButton } from './refund-button';
 
 async function getOrderDetails(id: string) {
   const db = getDb();
@@ -110,6 +111,9 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
             <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${statusColors[order.status as keyof typeof statusColors] || 'bg-slate-100 text-slate-800'}`}>
               {order.status.replace(/_/g, ' ')}
             </span>
+            {order.paymentStatus === 'succeeded' && order.status !== 'refunded' && (
+              <RefundButton orderId={order.id} />
+            )}
           </div>
         </div>
       </div>

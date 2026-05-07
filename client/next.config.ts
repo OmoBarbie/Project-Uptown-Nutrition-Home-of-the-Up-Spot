@@ -1,20 +1,21 @@
-import type { NextConfig } from "next";
-import path from "path";
+import type { NextConfig } from 'next'
+import path from 'node:path'
 
 const nextConfig: NextConfig = {
   /* config options here */
   typedRoutes: false, // Disabled temporarily due to route group type issues
   reactCompiler: true,
   turbopack: {
-    root: path.join(__dirname, ".."),
+    root: path.join(__dirname, '..'),
   },
   experimental: {
     turbopackFileSystemCacheForDev: true,
+    optimizePackageImports: ['@heroicons/react', '@headlessui/react'],
   },
   typescript: {
     ignoreBuildErrors: true,
   },
-  transpilePackages: ["@tayo/components", "@tayo/database"],
-};
+  transpilePackages: ['@tayo/components', '@tayo/database'],
+}
 
-export default nextConfig;
+export default nextConfig

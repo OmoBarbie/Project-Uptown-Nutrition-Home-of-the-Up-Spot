@@ -1,6 +1,3 @@
-// Source: Inspired by Salient's SecondaryFeatures
-// Customized for ecommerce USPs (Unique Selling Propositions)
-
 import { Container } from '@/components/Container'
 
 const features = [
@@ -13,7 +10,7 @@ const features = [
   {
     name: 'Satisfaction Guarantee',
     description:
-      "Love it or your money back. We're committed to your complete satisfaction with every order.",
+      'Love it or your money back. We\'re committed to your complete satisfaction with every order.',
     icon: ReturnIcon,
   },
   {
@@ -44,7 +41,13 @@ const features = [
 
 function TruckIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      {...props}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -56,7 +59,13 @@ function TruckIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
 
 function ReturnIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      {...props}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -68,7 +77,13 @@ function ReturnIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
 
 function HeartIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      {...props}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -80,7 +95,13 @@ function HeartIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
 
 function CheckBadgeIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      {...props}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -92,11 +113,17 @@ function CheckBadgeIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
 
 function LeafIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      {...props}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M12 3.75s-6.75 8.25-6.75 11.25S8.25 20.25 12 20.25s6.75-1.875 6.75-4.875-6.75-11.625-6.75-11.625z"
+        d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.6C17.31 4.55 14.78 3 12 3z"
       />
     </svg>
   )
@@ -104,7 +131,13 @@ function LeafIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
 
 function GiftIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
-    <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <svg
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      {...props}
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -119,32 +152,57 @@ export function Features() {
     <section
       id="features"
       aria-label="Features"
-      className="bg-slate-50 py-20 sm:py-32"
+      className="bg-background py-20 sm:py-32 border-t border-sand"
     >
       <Container>
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-            Why Choose Uptown Nutrition
-          </h2>
-          <p className="mt-4 text-lg tracking-tight text-slate-700">
-            We're committed to making healthy eating easy, delicious, and accessible for everyone.
+        {/* Section header — editorial two-column */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end mb-16">
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-px w-8 bg-terracotta-500" />
+              <span className="text-xs font-semibold tracking-[0.22em] uppercase text-terracotta-500">
+                Why us
+              </span>
+            </div>
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium text-charcoal leading-[0.92]">
+              Why Choose
+              <br />
+              <em>Uptown Nutrition</em>
+            </h2>
+          </div>
+          <p className="text-sm leading-[1.75] text-foreground/55">
+            We're committed to making healthy eating easy, delicious, and
+            accessible for everyone in Chicago and beyond.
           </p>
         </div>
 
+        {/* Features grid — editorial with number watermarks */}
         <ul
           role="list"
-          className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 text-sm sm:mt-20 sm:grid-cols-2 md:gap-y-10 lg:max-w-none lg:grid-cols-3"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-l border-t border-sand"
         >
-          {features.map((feature) => (
+          {features.map((feature, i) => (
             <li
               key={feature.name}
-              className="rounded-2xl border border-slate-200 bg-white p-8 hover:shadow-lg transition-shadow duration-200"
+              className="relative p-5 sm:p-8 border-r border-b border-sand group hover:bg-cream-200 transition-colors duration-200 overflow-hidden"
             >
-              <feature.icon className="h-8 w-8 text-emerald-600" />
-              <h3 className="mt-6 font-display text-lg font-semibold text-slate-900">
+              {/* Decorative number watermark */}
+              <span className="absolute top-3 right-4 font-display text-6xl sm:text-8xl font-semibold text-sand leading-none select-none group-hover:text-cream-300 transition-colors">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+
+              <feature.icon className="relative h-6 w-6 text-forest-600" />
+
+              <h3 className="relative mt-6 font-display text-xl font-semibold text-charcoal">
                 {feature.name}
               </h3>
-              <p className="mt-2 text-slate-700">{feature.description}</p>
+
+              <p className="relative mt-3 text-sm leading-[1.7] text-foreground/55">
+                {feature.description}
+              </p>
+
+              {/* Bottom accent line on hover */}
+              <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-forest-600 transition-all duration-300 group-hover:w-full" />
             </li>
           ))}
         </ul>

@@ -1,8 +1,21 @@
-// About page for Uptown Nutrition
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Container } from "@/components/Container";
-import { Button } from "@/components/Button";
+import type { Metadata } from 'next'
+import { Button } from '@/components/Button'
+import { Container } from '@/components/Container'
+import { Footer } from '@/components/Footer'
+import { Header } from '@/components/Header'
+
+export const metadata: Metadata = {
+  title: 'About Us',
+  description:
+    'Meet the mother and daughter duo behind Uptown Nutrition — 10+ years bringing healthy protein smoothies and nutritionist-approved meals to Chicago\'s Uptown neighborhood.',
+  alternates: { canonical: '/about' },
+  openGraph: {
+    title: 'About Uptown Nutrition — Our Story',
+    description:
+      'A mother and daughter duo with 30+ years of nursing expertise bringing fresh, nutritious smoothies to Uptown Chicago for over a decade.',
+    url: '/about',
+  },
+}
 
 export default function AboutPage() {
   return (
@@ -230,5 +243,5 @@ export default function AboutPage() {
       </main>
       <Footer />
     </>
-  );
+  )
 }

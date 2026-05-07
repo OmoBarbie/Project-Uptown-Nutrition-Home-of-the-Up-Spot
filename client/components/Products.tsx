@@ -1,14 +1,11 @@
-// Source: Salient's PrimaryFeatures component with tab interface
-// Customized for product showcase with categories
-
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import clsx from 'clsx'
+import { useEffect, useState } from 'react'
 
-import { Container } from '@/components/Container'
 import { useCart } from '@/app/context/CartContext'
+import { Container } from '@/components/Container'
 
 const products = [
   {
@@ -42,14 +39,14 @@ const products = [
         name: 'Strawberry Short Cake',
         price: '$9',
         image: '🍓',
-        features: ['250-350 Cal', '9-14g Sugar', '24g Protein'],
+        features: ['250–350 Cal', '9–14g Sugar', '24g Protein'],
       },
       {
         id: 18,
         name: 'Almond Joy',
         price: '$9',
         image: '🥥',
-        features: ['10-15g Carbs', 'Coconut & Almond', '24g Protein'],
+        features: ['10–15g Carbs', 'Coconut & Almond', '24g Protein'],
       },
     ],
   },
@@ -98,9 +95,9 @@ const products = [
 ]
 
 export function Products() {
-  const [tabOrientation, setTabOrientation] = useState<'horizontal' | 'vertical'>(
-    'horizontal',
-  )
+  const [tabOrientation, setTabOrientation] = useState<
+    'horizontal' | 'vertical'
+  >('horizontal')
   const { addItem } = useCart()
 
   useEffect(() => {
@@ -122,56 +119,69 @@ export function Products() {
     <section
       id="products"
       aria-label="Featured Products"
-      className="relative overflow-hidden bg-white pt-20 pb-28 sm:py-32"
+      className="relative overflow-hidden bg-cream-200 border-t border-sand py-20 sm:py-32"
     >
       <Container className="relative">
-        <div className="max-w-2xl md:mx-auto md:text-center xl:max-w-none">
-          <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-            Our Nutrition Menu
-          </h2>
-          <p className="mt-6 text-lg tracking-tight text-slate-700">
-            Carefully crafted meals and snacks across all categories. Each item is
-            prepared fresh with whole ingredients and balanced nutrition in mind.
+        {/* Section header */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end mb-16">
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-px w-8 bg-terracotta-500" />
+              <span className="text-xs font-semibold tracking-[0.22em] uppercase text-terracotta-500">
+                Our menu
+              </span>
+            </div>
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium text-charcoal leading-[0.92]">
+              Our Nutrition
+              <br />
+              <em>Menu</em>
+            </h2>
+          </div>
+          <p className="text-sm leading-[1.75] text-foreground/55">
+            Carefully crafted meals and snacks across all categories. Each item
+            is prepared fresh with whole ingredients and balanced nutrition in
+            mind.
           </p>
         </div>
 
         <TabGroup
-          className="mt-16 grid grid-cols-1 items-center gap-y-2 pt-10 sm:gap-y-6 md:mt-20 lg:grid-cols-12 lg:pt-0"
+          className="grid grid-cols-1 items-center gap-y-2 pt-4 sm:gap-y-6 lg:grid-cols-12 lg:pt-0"
           vertical={tabOrientation === 'vertical'}
         >
           {({ selectedIndex }) => (
             <>
-              <div className="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-5">
-                <TabList className="relative z-10 flex gap-x-4 px-4 whitespace-nowrap sm:mx-auto sm:px-0 lg:mx-0 lg:block lg:gap-x-0 lg:gap-y-1 lg:whitespace-normal">
+              {/* Tab list */}
+              <div className="-mx-4 flex overflow-x-auto pb-4 sm:mx-0 sm:overflow-visible sm:pb-0 lg:col-span-4">
+                <TabList className="relative z-10 flex gap-x-0 whitespace-nowrap sm:mx-auto sm:px-0 lg:mx-0 lg:flex-col lg:whitespace-normal">
                   {products.map((product, productIndex) => (
                     <div
                       key={product.category}
                       className={clsx(
-                        'group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6',
+                        'group relative px-5 py-2.5 lg:px-6 lg:py-5 cursor-pointer transition-colors',
                         selectedIndex === productIndex
-                          ? 'bg-white lg:bg-emerald-600/10 lg:ring-1 lg:ring-emerald-600/20 lg:ring-inset'
-                          : 'hover:bg-slate-100 lg:hover:bg-slate-50',
+                          ? 'border-b-2 border-forest-600 lg:border-b-0 lg:border-l-2 lg:bg-background'
+                          : 'border-b-2 border-transparent lg:border-b-0 lg:border-l-2 lg:border-sand hover:lg:bg-background/50',
                       )}
                     >
                       <h3>
                         <Tab
                           className={clsx(
-                            'font-display text-lg data-selected:not-data-focus:outline-hidden',
+                            'font-display text-lg font-medium focus:outline-none',
                             selectedIndex === productIndex
-                              ? 'text-emerald-600 lg:text-emerald-600'
-                              : 'text-slate-600 hover:text-slate-900 lg:text-slate-900',
+                              ? 'text-forest-600'
+                              : 'text-foreground/50 hover:text-foreground/80',
                           )}
                         >
-                          <span className="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
+                          <span className="absolute inset-0" />
                           {product.category}
                         </Tab>
                       </h3>
                       <p
                         className={clsx(
-                          'mt-2 hidden text-sm lg:block',
+                          'mt-1.5 hidden text-xs leading-relaxed lg:block',
                           selectedIndex === productIndex
-                            ? 'text-slate-700'
-                            : 'text-slate-600 group-hover:text-slate-700',
+                            ? 'text-foreground/60'
+                            : 'text-foreground/40 group-hover:text-foreground/50',
                         )}
                       >
                         {product.description}
@@ -181,62 +191,55 @@ export function Products() {
                 </TabList>
               </div>
 
-              <TabPanels className="lg:col-span-7">
-                {products.map((product) => (
+              {/* Tab panels */}
+              <TabPanels className="lg:col-span-8 lg:pl-10">
+                {products.map(product => (
                   <TabPanel key={product.category} unmount={false}>
-                    <div className="relative sm:px-6 lg:hidden">
-                      <p className="relative mx-auto max-w-2xl text-base text-slate-600 sm:text-center">
+                    <div className="relative sm:px-0 lg:hidden mb-6">
+                      <p className="text-sm text-foreground/55 leading-relaxed">
                         {product.description}
                       </p>
                     </div>
-                    <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2">
-                      {product.items.map((item) => (
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {product.items.map(item => (
                         <div
                           key={item.name}
-                          className="group relative overflow-hidden rounded-2xl bg-slate-50 p-6 shadow-md hover:shadow-xl transition-all duration-200"
+                          className="group relative bg-background border border-sand p-4 sm:p-6 hover:border-forest-600 transition-colors duration-200"
                         >
-                          <div className="text-6xl mb-4">{item.image}</div>
-                          <h4 className="font-display text-xl font-semibold text-slate-900">
+                          {/* Emoji */}
+                          <div className="text-5xl mb-5">{item.image}</div>
+
+                          <h4 className="font-display text-xl font-semibold text-charcoal">
                             {item.name}
                           </h4>
-                          <p className="mt-2 text-2xl font-bold text-emerald-600">
+
+                          <p className="mt-1.5 font-display text-2xl font-medium italic text-terracotta-500">
                             {item.price}
                           </p>
-                          <ul className="mt-4 space-y-2">
-                            {item.features.map((feature) => (
-                              <li
+
+                          {/* Feature tags */}
+                          <div className="mt-4 flex flex-wrap gap-1.5">
+                            {item.features.map(feature => (
+                              <span
                                 key={feature}
-                                className="flex items-center text-sm text-slate-600"
+                                className="inline-block px-2.5 py-1 bg-forest-50 text-forest-700 text-[0.7rem] font-medium tracking-wide border border-forest-100"
                               >
-                                <svg
-                                  className="mr-2 h-4 w-4 text-emerald-500"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
                                 {feature}
-                              </li>
+                              </span>
                             ))}
-                          </ul>
+                          </div>
+
+                          {/* CTA */}
                           <button
-                            onClick={() => {
-                              addItem({
-                                id: item.id,
-                                name: item.name,
-                                price: item.price,
-                                imageSrc: item.image,
-                                imageAlt: item.name,
-                              })
-                            }}
-                            className="mt-6 w-full rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 transition-colors"
+                            onClick={() => addItem(String(item.id))}
+                            className="mt-6 w-full bg-forest-600 text-cream-100 py-2.5 text-sm font-semibold tracking-wide hover:bg-forest-700 active:bg-forest-900 transition-colors"
                           >
                             Add to Cart
                           </button>
+
+                          {/* Hover accent */}
+                          <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-forest-600 transition-all duration-300 group-hover:w-full" />
                         </div>
                       ))}
                     </div>

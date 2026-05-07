@@ -1,31 +1,72 @@
-"use client";
+'use client'
 
-import { useSession } from "@/lib/auth-client";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Container } from "@/components/Container";
-import Link from "next/link";
-import { useActionState, useEffect } from "react";
-import { updateProfile, type UpdateProfileState } from "./actions";
-import { SubmitButton } from "./submit-button";
+import type { UpdateProfileState } from './actions'
+import Link from 'next/link'
+import { useActionState, useEffect, useState, useTransition } from 'react'
+import { Container } from '@/components/Container'
+import { Footer } from '@/components/Footer'
+import { Header } from '@/components/Header'
+import { authClient, useSession } from '@/lib/auth-client'
+import { updateProfile } from './actions'
+import { SubmitButton } from './submit-button'
 
 const initialState: UpdateProfileState = {
   success: undefined,
   message: undefined,
   errors: undefined,
-};
+}
+
+function VerificationBanner({ email }: { email: string }) {
+  const [sent, setSent] = useState(false)
+  const [resendError, setResendError] = useState('')
+  const [isPending, startTransition] = useTransition()
+
+  function handleResend() {
+    setResendError('')
+    startTransition(async () => {
+      const { error } = await authClient.sendVerificationEmail({ email, callbackURL: '/account' })
+      if (error) {
+        setResendError('Failed to send. Please try again.')
+        return
+      }
+      setSent(true)
+    })
+  }
+
+  return (
+    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center justify-between mb-6">
+      <div>
+        <p className="text-sm text-yellow-800">Please verify your email address.</p>
+        {resendError && <p className="text-xs text-red-600 mt-1">{resendError}</p>}
+      </div>
+      {sent
+        ? (
+            <span className="text-sm text-yellow-700">Sent!</span>
+          )
+        : (
+            <button
+              onClick={handleResend}
+              disabled={isPending}
+              className="text-sm text-yellow-700 underline disabled:opacity-50"
+            >
+              {isPending ? 'Sending…' : 'Resend email'}
+            </button>
+          )}
+    </div>
+  )
+}
 
 function AccountContent() {
-  const { data: session, isPending, refetch } = useSession();
-  const [state, formAction] = useActionState(updateProfile, initialState);
+  const { data: session, isPending, refetch } = useSession()
+  const [state, formAction] = useActionState(updateProfile, initialState)
 
   // Refetch session when profile is updated successfully
   useEffect(() => {
     if (state.success) {
       // Force session refetch to get updated user data
-      refetch();
+      refetch()
     }
-  }, [state.success, refetch]);
+  }, [state.success, refetch])
 
   if (isPending) {
     return (
@@ -42,11 +83,11 @@ function AccountContent() {
         </main>
         <Footer />
       </>
-    );
+    )
   }
 
   if (!session) {
-    return null; // Middleware will redirect
+    return null // Middleware will redirect
   }
 
   return (
@@ -63,6 +104,11 @@ function AccountContent() {
             </p>
 
             <div className="mt-10 space-y-8">
+              {/* Email Verification Banner */}
+              {!session?.user?.emailVerified && (
+                <VerificationBanner email={session.user.email} />
+              )}
+
               {/* Success/Error Message */}
               {state.message && (
                 <div
@@ -139,7 +185,7 @@ function AccountContent() {
                             id="phone"
                             name="phone"
                             key={session.user.id}
-                            defaultValue={(session.user as any).phone || ""}
+                            defaultValue={(session.user as any).phone || ''}
                             placeholder="(555) 123-4567"
                             className="block w-full rounded-md border-0 py-1.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
                           />
@@ -209,9 +255,9 @@ function AccountContent() {
       </main>
       <Footer />
     </>
-  );
+  )
 }
 
 export default function AccountPage() {
-  return <AccountContent />;
+  return <AccountContent />
 }
