@@ -2,9 +2,9 @@
 
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import clsx from 'clsx'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
-import { useCart } from '@/app/context/CartContext'
 import { Container } from '@/components/Container'
 
 const products = [
@@ -98,7 +98,6 @@ export function Products() {
   const [tabOrientation, setTabOrientation] = useState<
     'horizontal' | 'vertical'
   >('horizontal')
-  const { addItem } = useCart()
 
   useEffect(() => {
     const lgMediaQuery = window.matchMedia('(min-width: 1024px)')
@@ -231,12 +230,12 @@ export function Products() {
                           </div>
 
                           {/* CTA */}
-                          <button
-                            onClick={() => addItem(String(item.id))}
-                            className="mt-6 w-full bg-forest-600 text-cream-100 py-2.5 text-sm font-semibold tracking-wide hover:bg-forest-700 active:bg-forest-900 transition-colors"
+                          <Link
+                            href="/products"
+                            className="mt-6 block w-full bg-forest-600 text-cream-100 py-2.5 text-sm font-semibold tracking-wide text-center hover:bg-forest-700 active:bg-forest-900 transition-colors"
                           >
-                            Add to Cart
-                          </button>
+                            Order Now →
+                          </Link>
 
                           {/* Hover accent */}
                           <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-forest-600 transition-all duration-300 group-hover:w-full" />
