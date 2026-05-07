@@ -30,7 +30,7 @@ export async function createCategory(formData: FormData) {
   }).returning();
 
   await createAuditLog(session.user.id, {
-    action: 'create', entityType: 'category', entityId: category.id, changes: { name },
+    action: 'create', entityType: 'category', entityId: category.id, changes: { after: { name } },
   });
 
   revalidatePath('/categories');
@@ -55,7 +55,7 @@ export async function updateCategory(id: string, formData: FormData) {
     .where(eq(schema.categories.id, id));
 
   await createAuditLog(session.user.id, {
-    action: 'update', entityType: 'category', entityId: id, changes: { name, slug, isActive },
+    action: 'update', entityType: 'category', entityId: id, changes: { after: { name, slug, isActive } },
   });
 
   revalidatePath('/categories');
@@ -80,7 +80,7 @@ export async function deleteCategory(id: string) {
   }
 
   await createAuditLog(session.user.id, {
-    action: 'delete', entityType: 'category', entityId: id, changes: {},
+    action: 'delete', entityType: 'category', entityId: id,
   });
 
   revalidatePath('/categories');
