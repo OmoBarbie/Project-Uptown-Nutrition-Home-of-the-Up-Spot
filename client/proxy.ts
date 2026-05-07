@@ -5,7 +5,11 @@ import { authRatelimit, apiRatelimit } from '@/lib/rate-limit';
 const protectedRoutes = ['/account', '/orders'];
 
 function getIp(req: NextRequest): string {
-  return req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
+  return (
+    req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+    req.headers.get('x-real-ip') ??
+    '127.0.0.1'
+  );
 }
 
 export async function proxy(request: NextRequest) {
@@ -22,9 +26,8 @@ export async function proxy(request: NextRequest) {
       );
     }
   }
-
   // Rate limit public API endpoints
-  if (pathname.startsWith('/api/')) {
+  else if (pathname.startsWith('/api/')) {
     const { success, reset } = await apiRatelimit.limit(ip);
     if (!success) {
       return NextResponse.json(
