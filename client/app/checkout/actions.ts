@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getCart, clearCart } from '@/app/actions/cart';
+import { sendOrderConfirmation } from '@tayo/email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
@@ -148,6 +149,27 @@ export async function confirmOrder(orderId: string) {
         updatedAt: new Date(),
       })
       .where(eq(schema.orders.id, orderId));
+
+    const fullOrder = await db.query.orders.findFirst({
+      where: eq(schema.orders.id, orderId),
+      with: { items: true },
+    });
+
+    if (fullOrder?.customerEmail) {
+      await sendOrderConfirmation(fullOrder.customerEmail, {
+        orderNumber: fullOrder.orderNumber,
+        items: fullOrder.items.map((i) => ({
+          name: i.productName,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+        })),
+        subtotal: fullOrder.subtotal,
+        tax: fullOrder.tax,
+        deliveryFee: fullOrder.deliveryFee,
+        total: fullOrder.total,
+        deliveryAddress: fullOrder.customerName ?? '',
+      });
+    }
 
     redirect(`/orders/${orderId}?success=true`);
   } catch (error) {
