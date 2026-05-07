@@ -89,6 +89,7 @@ export function ProductDetailClient({ product, ratings }: Props) {
                 {product.protein != null && <><dt className="text-gray-500">Protein</dt><dd className="font-medium col-span-2">{product.protein}g</dd></>}
                 {product.carbs != null && <><dt className="text-gray-500">Carbs</dt><dd className="font-medium col-span-2">{product.carbs}g</dd></>}
                 {product.fiber != null && <><dt className="text-gray-500">Fiber</dt><dd className="font-medium col-span-2">{product.fiber}g</dd></>}
+                {product.sugar != null && <><dt className="text-gray-500">Sugar</dt><dd className="font-medium col-span-2">{product.sugar}g</dd></>}
                 {product.fat != null && <><dt className="text-gray-500">Fat</dt><dd className="font-medium col-span-2">{product.fat}g</dd></>}
               </dl>
             </details>
