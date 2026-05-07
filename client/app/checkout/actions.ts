@@ -72,13 +72,15 @@ export async function createPaymentIntent(
       return sum + (price * item.quantity);
     }, 0);
 
+    const discountRaw = parseFloat((formData.get('discount') as string) ?? '0') || 0;
+    const couponCode = (formData.get('couponCode') as string) || null;
     const tax = subtotal * 0.08; // 8% tax
     const deliveryFee = subtotal >= 50 ? 0 : 5; // Free delivery over $50
-    const total = subtotal + tax + deliveryFee;
+    const total = Math.max(0, subtotal - discountRaw) + tax + deliveryFee;
 
     // Create Stripe payment intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(total * 100), // Convert to cents
+      amount: Math.max(50, Math.round(total * 100)), // Convert to cents, min $0.50
       currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
@@ -102,6 +104,8 @@ export async function createPaymentIntent(
       subtotal: subtotal.toFixed(2),
       tax: tax.toFixed(2),
       deliveryFee: deliveryFee.toFixed(2),
+      discount: discountRaw.toFixed(2),
+      couponCode: couponCode,
       total: total.toFixed(2),
       paymentIntentId: paymentIntent.id,
       customerName: name,

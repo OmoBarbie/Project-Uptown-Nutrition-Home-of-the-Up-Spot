@@ -9,6 +9,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { createPaymentIntent, type CheckoutState } from "./actions";
 import type { CartItem } from "@/app/context/CartContext";
+import { CouponInput } from "./coupon-input";
 
 const initialState: CheckoutState = {
   success: undefined,
@@ -40,6 +41,8 @@ export function CheckoutForm({
   const [state, formAction] = useActionState(createPaymentIntent, initialState);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentReady, setPaymentReady] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  const [couponCode, setCouponCode] = useState('');
 
   // When we get a client secret, we can show the payment element
   useEffect(() => {
@@ -85,6 +88,20 @@ export function CheckoutForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Hidden coupon fields passed to server action */}
+      <input type="hidden" name="discount" value={discount} />
+      <input type="hidden" name="couponCode" value={couponCode} />
+
+      <div className="bg-white dark:bg-slate-900 rounded-lg p-6 shadow-sm ring-1 ring-slate-900/5">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+          Coupon Code
+        </h2>
+        <CouponInput subtotal={subtotal} onApply={(d, c) => { setDiscount(d); setCouponCode(c); }} />
+        {discount > 0 && (
+          <p className="mt-2 text-sm text-green-700">Discount applied: -${discount.toFixed(2)}</p>
+        )}
+      </div>
+
       <div className="bg-white dark:bg-slate-900 rounded-lg p-6 shadow-sm ring-1 ring-slate-900/5">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
           Contact Information
