@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
+import { useSession, authClient } from "@/lib/auth-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
@@ -63,6 +63,19 @@ function AccountContent() {
             </p>
 
             <div className="mt-10 space-y-8">
+              {/* Email Verification Banner */}
+              {!session?.user?.emailVerified && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center justify-between mb-6">
+                  <p className="text-sm text-yellow-800">Please verify your email address.</p>
+                  <button
+                    onClick={() => authClient.sendVerificationEmail({ email: session.user.email, callbackURL: '/account' })}
+                    className="text-sm text-yellow-700 underline"
+                  >
+                    Resend email
+                  </button>
+                </div>
+              )}
+
               {/* Success/Error Message */}
               {state.message && (
                 <div
