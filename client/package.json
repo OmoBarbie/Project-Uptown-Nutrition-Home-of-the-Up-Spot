@@ -17,6 +17,8 @@
     "@tayo/components": "workspace:*",
     "@tayo/database": "workspace:*",
     "@tayo/email": "workspace:*",
+    "@upstash/ratelimit": "^2.0.0",
+    "@upstash/redis": "^1.34.0",
     "better-auth": "^1.1.4",
     "drizzle-orm": "0.37.0",
     "next": "16.0.10",
