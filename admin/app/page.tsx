@@ -73,5 +73,6 @@ function StatCard({ label, value, href }: { label: string; value: string | numbe
       <p className="text-2xl font-bold mt-1">{value}</p>
     </div>
   );
-  return href ? <Link href={href}>{content}</Link> : content;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return href ? <Link href={href as any}>{content}</Link> : content;
 }

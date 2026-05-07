@@ -29,11 +29,16 @@ export async function getDashboardData() {
       .where(and(eq(schema.products.isActive, true), sql`${schema.products.stockQuantity} < 10`))
       .then(([r]) => r.count),
 
-    db.query.orders.findMany({
-      orderBy: desc(schema.orders.createdAt),
-      limit: 5,
-      columns: { id: true, orderNumber: true, customerName: true, total: true, status: true, createdAt: true },
-    }),
+    db.select({
+      id: schema.orders.id,
+      orderNumber: schema.orders.orderNumber,
+      customerName: schema.orders.customerName,
+      total: schema.orders.total,
+      status: schema.orders.status,
+      createdAt: schema.orders.createdAt,
+    }).from(schema.orders)
+      .orderBy(desc(schema.orders.createdAt))
+      .limit(5),
 
     db.select({
       date: sql<string>`DATE(${schema.orders.createdAt})`.as('date'),
