@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -8,13 +7,11 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactCompiler: true,
-  turbopack: {
-    root: path.join(__dirname, ".."),
-  },
+  turbopack: {},
   experimental: {
     turbopackFileSystemCacheForDev: true,
   },
-  transpilePackages: ["@tayo/components"],
+  transpilePackages: ["@tayo/components", "@tayo/database", "@tayo/email"],
 };
 
 export default nextConfig;
