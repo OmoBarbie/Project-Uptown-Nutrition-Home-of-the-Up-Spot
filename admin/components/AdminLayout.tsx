@@ -11,6 +11,9 @@ import {
   XMarkIcon,
   ArrowRightOnRectangleIcon,
   UserCircleIcon,
+  UsersIcon,
+  StarIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import { useSession, signOut } from '@/lib/auth-client';
@@ -20,6 +23,9 @@ const navigation = [
   { name: 'Products', href: '/products', icon: CubeIcon },
   { name: 'Categories', href: '/categories', icon: TagIcon },
   { name: 'Orders', href: '/orders', icon: ShoppingBagIcon },
+  { name: 'Users', href: '/users', icon: UsersIcon },
+  { name: 'Reviews', href: '/reviews', icon: StarIcon },
+  { name: 'Audit Logs', href: '/audit-logs', icon: ClipboardDocumentListIcon },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
