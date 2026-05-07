@@ -1,32 +1,37 @@
-'use client';
+'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useTransition } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useTransition } from 'react'
 
 interface Category {
-  id: string;
-  name: string;
-  slug: string;
+  id: string
+  name: string
+  slug: string
 }
 
 interface Props {
-  categories: Category[];
-  currentQ: string;
-  currentCategory: string;
-  currentSort: string;
+  categories: Category[]
+  currentQ: string
+  currentCategory: string
+  currentSort: string
 }
 
 export function ProductFilters({ categories, currentQ, currentCategory, currentSort }: Props) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [, startTransition] = useTransition()
 
   const updateParam = useCallback((key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) params.set(key, value); else params.delete(key);
-    params.delete('page');
-    startTransition(() => router.push(`/products?${params.toString()}`));
-  }, [router, searchParams]);
+    const params = new URLSearchParams(searchParams.toString())
+    if (value) {
+      params.set(key, value)
+    }
+    else {
+      params.delete(key)
+    }
+    params.delete('page')
+    startTransition(() => router.push(`/products?${params.toString()}`))
+  }, [router, searchParams])
 
   return (
     <div className="flex flex-wrap gap-3 items-center mb-6">
@@ -35,9 +40,9 @@ export function ProductFilters({ categories, currentQ, currentCategory, currentS
         defaultValue={currentQ}
         placeholder="Search products…"
         onChange={(e) => {
-          const v = e.target.value;
-          const timer = setTimeout(() => updateParam('q', v), 300);
-          return () => clearTimeout(timer);
+          const v = e.target.value
+          const timer = setTimeout(updateParam, 300, 'q', v)
+          return () => clearTimeout(timer)
         }}
         className="border rounded-md px-3 py-2 text-sm w-52"
       />
@@ -49,7 +54,7 @@ export function ProductFilters({ categories, currentQ, currentCategory, currentS
         >
           All
         </button>
-        {categories.map((c) => (
+        {categories.map(c => (
           <button
             key={c.id}
             onClick={() => updateParam('category', c.slug)}
@@ -62,7 +67,7 @@ export function ProductFilters({ categories, currentQ, currentCategory, currentS
 
       <select
         value={currentSort}
-        onChange={(e) => updateParam('sort', e.target.value)}
+        onChange={e => updateParam('sort', e.target.value)}
         className="border rounded-md px-2 py-2 text-sm ml-auto"
       >
         <option value="">Sort: Default</option>
@@ -71,5 +76,5 @@ export function ProductFilters({ categories, currentQ, currentCategory, currentS
         <option value="newest">Newest</option>
       </select>
     </div>
-  );
+  )
 }

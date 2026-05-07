@@ -1,41 +1,51 @@
-'use client';
+'use client'
 
-import { Suspense, useState, useTransition } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useState, useTransition } from 'react'
+import { authClient } from '@/lib/auth-client'
 
 function ResetPasswordForm() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState('');
-  const [isPending, startTransition] = useTransition();
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [error, setError] = useState('')
+  const [isPending, startTransition] = useTransition()
 
-  const token = searchParams.get('token');
+  const token = searchParams.get('token')
 
   if (!token) {
     return (
       <div className="text-center max-w-sm">
         <p className="text-2xl font-bold text-red-600 mb-2">Invalid link</p>
         <p className="text-gray-600">
-          This password reset link is invalid or has expired.{' '}
+          This password reset link is invalid or has expired.
+          {' '}
           <a href="/forgot-password" className="text-green-700 underline">Request a new one</a>
         </p>
       </div>
-    );
+    )
   }
 
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (password !== confirm) { setError('Passwords do not match'); return; }
-    if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
-    setError('');
+    e.preventDefault()
+    if (password !== confirm) {
+      setError('Passwords do not match')
+      return
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
+      return
+    }
+    setError('')
     startTransition(async () => {
-      const { error } = await authClient.resetPassword({ newPassword: password, token: token! });
-      if (error) { setError(error.message ?? 'Reset failed'); return; }
-      router.push('/login?reset=1');
-    });
+      const { error } = await authClient.resetPassword({ newPassword: password, token: token! })
+      if (error) {
+        setError(error.message ?? 'Reset failed')
+        return
+      }
+      router.push('/login?reset=1')
+    })
   }
 
   return (
@@ -48,7 +58,7 @@ function ResetPasswordForm() {
           required
           minLength={8}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
           className="w-full border rounded-md px-3 py-2"
         />
       </div>
@@ -58,7 +68,7 @@ function ResetPasswordForm() {
           type="password"
           required
           value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
+          onChange={e => setConfirm(e.target.value)}
           className="w-full border rounded-md px-3 py-2"
         />
       </div>
@@ -71,7 +81,7 @@ function ResetPasswordForm() {
         {isPending ? 'Saving…' : 'Set password'}
       </button>
     </form>
-  );
+  )
 }
 
 export default function ResetPasswordPage() {
@@ -81,5 +91,5 @@ export default function ResetPasswordPage() {
         <ResetPasswordForm />
       </Suspense>
     </div>
-  );
+  )
 }

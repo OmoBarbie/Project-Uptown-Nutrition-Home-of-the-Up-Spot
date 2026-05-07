@@ -1,34 +1,34 @@
-"use client";
+'use client'
 
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Container } from "@/components/Container";
-import { useCart } from "@/app/context/CartContext";
-import { useSession } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-import { CheckoutForm } from "./checkout-form";
+import { Elements } from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useCart } from '@/app/context/CartContext'
+import { Container } from '@/components/Container'
+import { Footer } from '@/components/Footer'
+import { Header } from '@/components/Header'
+import { useSession } from '@/lib/auth-client'
+import { CheckoutForm } from './checkout-form'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 export default function CheckoutPage() {
-  const { optimisticItems, subtotal } = useCart();
-  const { data: session } = useSession();
-  const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const { optimisticItems, subtotal } = useCart()
+  const { data: session } = useSession()
+  const router = useRouter()
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   // Redirect if cart is empty
   useEffect(() => {
     if (mounted && optimisticItems.length === 0) {
-      router.push('/cart');
+      router.push('/cart')
     }
-  }, [mounted, optimisticItems.length, router]);
+  }, [mounted, optimisticItems.length, router])
 
   if (!mounted) {
     return (
@@ -44,16 +44,16 @@ export default function CheckoutPage() {
         </main>
         <Footer />
       </>
-    );
+    )
   }
 
   if (optimisticItems.length === 0) {
-    return null;
+    return null
   }
 
-  const tax = subtotal * 0.08;
-  const deliveryFee = subtotal >= 50 ? 0 : 5;
-  const total = subtotal + tax + deliveryFee;
+  const tax = subtotal * 0.08
+  const deliveryFee = subtotal >= 50 ? 0 : 5
+  const total = subtotal + tax + deliveryFee
 
   return (
     <>
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
 
                   {/* Cart Items */}
                   <div className="space-y-4 mb-6">
-                    {optimisticItems.map((item) => (
+                    {optimisticItems.map(item => (
                       <div key={item.id} className="flex gap-4">
                         <div className="text-4xl">{item.imageSrc}</div>
                         <div className="flex-1">
@@ -113,11 +113,14 @@ export default function CheckoutPage() {
                             </p>
                           )}
                           <p className="text-sm text-slate-600 dark:text-slate-400">
-                            Qty: {item.quantity}
+                            Qty:
+                            {' '}
+                            {item.quantity}
                           </p>
                         </div>
                         <div className="text-sm font-medium text-slate-900 dark:text-white">
-                          ${(parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
+                          $
+                          {(Number.parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}
@@ -127,11 +130,17 @@ export default function CheckoutPage() {
                   <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Subtotal</span>
-                      <span className="text-slate-900 dark:text-white">${subtotal.toFixed(2)}</span>
+                      <span className="text-slate-900 dark:text-white">
+                        $
+                        {subtotal.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Tax (8%)</span>
-                      <span className="text-slate-900 dark:text-white">${tax.toFixed(2)}</span>
+                      <span className="text-slate-900 dark:text-white">
+                        $
+                        {tax.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Delivery</span>
@@ -141,12 +150,18 @@ export default function CheckoutPage() {
                     </div>
                     {subtotal < 50 && (
                       <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                        Add ${(50 - subtotal).toFixed(2)} more for free delivery!
+                        Add $
+                        {(50 - subtotal).toFixed(2)}
+                        {' '}
+                        more for free delivery!
                       </p>
                     )}
                     <div className="flex justify-between text-base font-semibold pt-2 border-t border-slate-200 dark:border-slate-700">
                       <span className="text-slate-900 dark:text-white">Total</span>
-                      <span className="text-slate-900 dark:text-white">${total.toFixed(2)}</span>
+                      <span className="text-slate-900 dark:text-white">
+                        $
+                        {total.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -157,5 +172,5 @@ export default function CheckoutPage() {
       </main>
       <Footer />
     </>
-  );
+  )
 }

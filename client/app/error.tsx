@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+export default function Error({ error, reset }: { error: Error, reset: () => void }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
       <p className="text-6xl mb-4">⚠️</p>
@@ -13,5 +13,5 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
         Try again
       </button>
     </div>
-  );
+  )
 }

@@ -1,17 +1,17 @@
-"use client";
+'use client'
 
-import { Fragment, useState } from 'react'
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
+import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Fragment, useState } from 'react'
 import { useCart } from '@/app/context/CartContext'
 
-type Product = {
-  id: number;
-  name: string;
-  price: string;
-  category: string;
-  description: string;
-  image: string;
+interface Product {
+  id: number
+  name: string
+  price: string
+  category: string
+  description: string
+  image: string
 }
 
 const allProducts: Product[] = [
@@ -54,9 +54,9 @@ const allProducts: Product[] = [
   { id: 31, name: 'Immunity Booster Shot', price: '$5', category: 'Shots', description: 'Immune system support', image: '🛡️' },
 ]
 
-type SearchModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
+interface SearchModalProps {
+  isOpen: boolean
+  onClose: () => void
 }
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
@@ -68,9 +68,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     : allProducts.filter((product) => {
         const searchQuery = query.toLowerCase()
         return (
-          product.name.toLowerCase().includes(searchQuery) ||
-          product.category.toLowerCase().includes(searchQuery) ||
-          product.description.toLowerCase().includes(searchQuery)
+          product.name.toLowerCase().includes(searchQuery)
+          || product.category.toLowerCase().includes(searchQuery)
+          || product.description.toLowerCase().includes(searchQuery)
         )
       })
 
@@ -120,7 +120,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   className="h-12 w-full border-0 bg-transparent pl-11 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0 sm:text-sm"
                   placeholder="Search products..."
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={e => setQuery(e.target.value)}
                   autoFocus
                 />
                 <button
@@ -134,50 +134,52 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
               {query !== '' && (
                 <div className="max-h-96 scroll-py-3 overflow-y-auto p-3">
-                  {filteredProducts.length === 0 ? (
-                    <div className="py-14 px-6 text-center text-sm sm:px-14">
-                      <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-slate-400" aria-hidden="true" />
-                      <p className="mt-4 font-semibold text-slate-900 dark:text-white">No products found</p>
-                      <p className="mt-2 text-slate-500 dark:text-slate-400">
-                        We couldn't find anything with that term. Please try again.
-                      </p>
-                    </div>
-                  ) : (
-                    <ul className="space-y-2">
-                      {filteredProducts.map((product) => (
-                        <li key={product.id} className="group">
-                          <div className="flex items-center gap-4 rounded-lg bg-slate-50 dark:bg-slate-800 p-4 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
-                            <div className="flex-shrink-0 text-4xl">{product.image}</div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
-                                {product.name}
-                              </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                {product.description}
-                              </p>
-                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 mt-2">
-                                {product.category}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
-                                {product.price}
-                              </span>
-                              <button
-                                onClick={() => {
-                                  handleAddToCart(product)
-                                  onClose()
-                                }}
-                                className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors"
-                              >
-                                Add to Cart
-                              </button>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  {filteredProducts.length === 0
+                    ? (
+                        <div className="py-14 px-6 text-center text-sm sm:px-14">
+                          <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-slate-400" aria-hidden="true" />
+                          <p className="mt-4 font-semibold text-slate-900 dark:text-white">No products found</p>
+                          <p className="mt-2 text-slate-500 dark:text-slate-400">
+                            We couldn't find anything with that term. Please try again.
+                          </p>
+                        </div>
+                      )
+                    : (
+                        <ul className="space-y-2">
+                          {filteredProducts.map(product => (
+                            <li key={product.id} className="group">
+                              <div className="flex items-center gap-4 rounded-lg bg-slate-50 dark:bg-slate-800 p-4 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
+                                <div className="flex-shrink-0 text-4xl">{product.image}</div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                    {product.name}
+                                  </p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                    {product.description}
+                                  </p>
+                                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 mt-2">
+                                    {product.category}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                                    {product.price}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      handleAddToCart(product)
+                                      onClose()
+                                    }}
+                                    className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors"
+                                  >
+                                    Add to Cart
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                 </div>
               )}
 

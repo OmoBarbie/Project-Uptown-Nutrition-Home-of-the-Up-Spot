@@ -28,10 +28,16 @@
     "clean": "rm -rf node_modules admin/node_modules client/node_modules components/node_modules database/node_modules"
   },
   "devDependencies": {
+    "@eslint-react/eslint-plugin": "3.0.0",
+    "@next/eslint-plugin-next": "^16.2.5",
+    "@setemiojo/eslint-config": "^8.2.2",
+    "@setemiojo/utils": "^0.0.6",
+    "admin": "workspace:*",
     "bun-types": "latest"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
+    "better-all": "^0.0.7",
     "clsx": "^2.1.1"
   }
 }

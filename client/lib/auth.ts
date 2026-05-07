@@ -1,7 +1,7 @@
-import { betterAuth } from 'better-auth';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { getDb, schema } from '@tayo/database';
-import { sendVerifyEmail, sendResetPasswordEmail } from '@tayo/email';
+import { getDb, schema } from '@tayo/database'
+import { sendResetPasswordEmail, sendVerifyEmail } from '@tayo/email'
+import { betterAuth } from 'better-auth'
+import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 
 export const auth = betterAuth({
   database: drizzleAdapter(getDb(), {
@@ -16,15 +16,15 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    sendResetPassword: async ({ user, url }: { user: { email: string }; url: string }) => {
-      await sendResetPasswordEmail(user.email, url);
+    sendResetPassword: async ({ user, url }: { user: { email: string }, url: string }) => {
+      await sendResetPasswordEmail(user.email, url)
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }: { user: { email: string }; url: string }) => {
-      await sendVerifyEmail(user.email, url);
+    sendVerificationEmail: async ({ user, url }: { user: { email: string }, url: string }) => {
+      await sendVerifyEmail(user.email, url)
     },
   },
   session: {
@@ -48,7 +48,7 @@ export const auth = betterAuth({
     'http://localhost:3000',
     process.env.NEXT_PUBLIC_CLIENT_URL || '',
   ],
-});
+})
 
-export type Session = typeof auth.$Infer.Session.session;
-export type User = typeof auth.$Infer.Session.user;
+export type Session = typeof auth.$Infer.Session.session
+export type User = typeof auth.$Infer.Session.user

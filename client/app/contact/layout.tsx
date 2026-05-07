@@ -1,12 +1,7 @@
-export default function AboutLayout({
+export default function ContactLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
-  return (
-   <main>
-     {children}
-   </main>
-  );
+  return <>{children}</>
 }
-

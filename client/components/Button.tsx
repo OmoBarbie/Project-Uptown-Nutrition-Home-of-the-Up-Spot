@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import clsx from 'clsx'
+import Link from 'next/link'
 
 const baseStyles = {
   solid:
@@ -16,6 +16,8 @@ const variantStyles = {
       'bg-indigo-600 text-white hover:text-slate-100 hover:bg-indigo-500 active:bg-indigo-800 active:text-indigo-100 focus-visible:outline-indigo-600',
     emerald:
       'bg-emerald-600 text-white hover:text-slate-100 hover:bg-emerald-500 active:bg-emerald-800 active:text-emerald-100 focus-visible:outline-emerald-600',
+    forest:
+      'bg-forest-600 text-cream-100 hover:bg-forest-500 active:bg-forest-700 focus-visible:outline-forest-600',
     white:
       'bg-white text-slate-900 hover:bg-emerald-50 active:bg-emerald-200 active:text-slate-600 focus-visible:outline-white',
   },
@@ -29,19 +31,19 @@ const variantStyles = {
 
 type ButtonProps = (
   | {
-      variant?: 'solid'
-      color?: keyof typeof variantStyles.solid
-    }
+    variant?: 'solid'
+    color?: keyof typeof variantStyles.solid
+  }
   | {
-      variant: 'outline'
-      color?: keyof typeof variantStyles.outline
-    }
-) &
-  (
-    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'color'>
-    | (Omit<React.ComponentPropsWithoutRef<'button'>, 'color'> & {
-        href?: undefined
-      })
+    variant: 'outline'
+    color?: keyof typeof variantStyles.outline
+  }
+)
+& (
+  | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'color'>
+  | (Omit<React.ComponentPropsWithoutRef<'button'>, 'color'> & {
+    href?: undefined
+  })
   )
 
 export function Button({ className, ...props }: ButtonProps) {
@@ -58,9 +60,11 @@ export function Button({ className, ...props }: ButtonProps) {
     className,
   )
 
-  return typeof props.href === 'undefined' ? (
-    <button className={className} {...props} />
-  ) : (
-    <Link className={className} {...props} />
-  )
+  return typeof props.href === 'undefined'
+    ? (
+        <button className={className} {...props} />
+      )
+    : (
+        <Link className={className} {...props} />
+      )
 }

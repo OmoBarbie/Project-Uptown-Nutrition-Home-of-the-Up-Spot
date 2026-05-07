@@ -1,156 +1,142 @@
-// Source: Salient's Testimonials component
-// Customized with ecommerce-focused customer reviews
-
-import { Container } from "@/components/Container";
+import { Container } from '@/components/Container'
 
 const testimonials = [
-  [
-    {
-      content:
-        "Switching to uptown nutrition has been a game-changer for my fitness journey. The meals are delicious, perfectly portioned, and I've never felt better!",
-      author: {
-        name: "Sarah Chen",
-        role: "Fitness Enthusiast",
-        initials: "SC",
-      },
+  {
+    content:
+      'Switching to Uptown Nutrition has been a game-changer for my fitness journey. The meals are delicious, perfectly portioned, and I\'ve never felt better!',
+    author: { name: 'Sarah Chen', role: 'Fitness Enthusiast', initials: 'SC' },
+  },
+  {
+    content:
+      'The protein meals are fantastic! High quality ingredients, great taste, and the convenience saves me hours each week. Plus my energy levels are through the roof.',
+    author: {
+      name: 'Michael Rodriguez',
+      role: 'Personal Trainer',
+      initials: 'MR',
     },
-    {
-      content:
-        "The protein meals are fantastic! High quality ingredients, great taste, and the convenience saves me hours each week. Plus my energy levels are through the roof.",
-      author: {
-        name: "Michael Rodriguez",
-        role: "Personal Trainer",
-        initials: "MR",
-      },
+  },
+  {
+    content:
+      'I appreciate the detailed nutrition information and the freshness of every meal. It\'s made tracking my macros so much easier while training.',
+    author: { name: 'Emma Thompson', role: 'Marathon Runner', initials: 'ET' },
+  },
+  {
+    content:
+      'The salmon bowls are my favorite! Fresh, flavorful, and I can actually feel the difference in my recovery after workouts.',
+    author: { name: 'David Kim', role: 'Yoga Instructor', initials: 'DK' },
+  },
+  {
+    content:
+      'Finally, healthy food that doesn\'t taste like cardboard! Every meal is restaurant-quality. I\'ve lost 15 pounds and gained so much energy.',
+    author: { name: 'Lisa Anderson', role: 'Busy Mom', initials: 'LA' },
+  },
+  {
+    content:
+      'The protein smoothies are perfect post-workout fuel. Tastes amazing and I love that they\'re made with real whole foods, not artificial additives.',
+    author: {
+      name: 'James Wilson',
+      role: 'Professional Athlete',
+      initials: 'JW',
     },
-  ],
-  [
-    {
-      content:
-        "I appreciate the detailed nutrition information and the freshness of every meal. It's made tracking my macros so much easier while training.",
-      author: {
-        name: "Emma Thompson",
-        role: "Marathon Runner",
-        initials: "ET",
-      },
-    },
-    {
-      content:
-        "The salmon bowls are my favorite! Fresh, flavorful, and I can actually feel the difference in my recovery after workouts.",
-      author: {
-        name: "David Kim",
-        role: "Yoga Instructor",
-        initials: "DK",
-      },
-    },
-  ],
-  [
-    {
-      content:
-        "Finally, healthy food that doesn't taste like cardboard! Every meal is restaurant-quality. I've lost 15 pounds and gained so much energy.",
-      author: {
-        name: "Lisa Anderson",
-        role: "Busy Mom",
-        initials: "LA",
-      },
-    },
-    {
-      content:
-        "The protein smoothies are perfect post-workout fuel. Tastes amazing and I love that they're made with real whole foods, not artificial additives.",
-      author: {
-        name: "James Wilson",
-        role: "Professional Athlete",
-        initials: "JW",
-      },
-    },
-  ],
-];
+  },
+]
 
-function QuoteIcon(props: React.ComponentPropsWithoutRef<"svg">) {
+function QuoteMarkIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
-    <svg aria-hidden="true" width={105} height={78} {...props}>
-      <path d="M25.086 77.292c-4.821 0-9.115-1.205-12.882-3.616-3.767-2.561-6.78-6.102-9.04-10.622C1.054 58.534 0 53.411 0 47.686c0-5.273.904-10.396 2.712-15.368 1.959-4.972 4.746-9.567 8.362-13.786a59.042 59.042 0 0 1 12.43-11.3C28.325 3.917 33.599 1.507 39.324 0l11.074 13.786c-6.479 2.561-11.677 5.951-15.594 10.17-3.767 4.219-5.65 7.835-5.65 10.848 0 1.356.377 2.863 1.13 4.52.904 1.507 2.637 3.089 5.198 4.746 3.767 2.41 6.328 4.972 7.684 7.684 1.507 2.561 2.26 5.5 2.26 8.814 0 5.123-1.959 9.19-5.876 12.204-3.767 3.013-8.588 4.52-14.464 4.52Zm54.24 0c-4.821 0-9.115-1.205-12.882-3.616-3.767-2.561-6.78-6.102-9.04-10.622-2.11-4.52-3.164-9.643-3.164-15.368 0-5.273.904-10.396 2.712-15.368 1.959-4.972 4.746-9.567 8.362-13.786a59.042 59.042 0 0 1 12.43-11.3C82.565 3.917 87.839 1.507 93.564 0l11.074 13.786c-6.479 2.561-11.677 5.951-15.594 10.17-3.767 4.219-5.65 7.835-5.65 10.848 0 1.356.377 2.863 1.13 4.52.904 1.507 2.637 3.089 5.198 4.746 3.767 2.41 6.328 4.972 7.684 7.684 1.507 2.561 2.26 5.5 2.26 8.814 0 5.123-1.959 9.19-5.876 12.204-3.767 3.013-8.588 4.52-14.464 4.52Z" />
+    <svg viewBox="0 0 36 28" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M11.086 27.292c-1.904 0-3.597-.476-5.081-1.428-1.484-1.01-2.674-2.408-3.567-4.19C1.496 19.892 1 17.82 1 15.558c0-2.08.356-4.10 1.07-6.06.773-1.96 1.872-3.77 3.297-5.44A23.29 23.29 0 0 1 10.26.59L14.63 5.99C12.09 7 9.95 8.35 8.39 10.07c-1.48 1.66-2.23 3.09-2.23 4.28 0 .535.149 1.13.446 1.784.356.595 1.041 1.22 2.052 1.873 1.485.953 2.497 1.963 3.032 3.032.595 1.011.893 2.17.893 3.478 0 2.02-.773 3.626-2.32 4.814-1.485 1.188-3.39 1.784-5.707 1.784zm21.408 0c-1.904 0-3.597-.476-5.081-1.428-1.484-1.01-2.674-2.408-3.567-4.19-0.832-1.784-1.248-3.807-1.248-6.069 0-2.08.356-4.10 1.07-6.06.773-1.96 1.872-3.77 3.297-5.44A23.29 23.29 0 0 1 32.038.59L36 5.99c-2.555 1.01-4.695 2.35-6.256 4.07-1.484 1.66-2.23 3.09-2.23 4.28 0 .535.149 1.13.446 1.784.356.595 1.041 1.22 2.052 1.873 1.485.953 2.497 1.963 3.032 3.032.595 1.011.893 2.17.893 3.478 0 2.02-.773 3.626-2.32 4.814-1.485 1.188-3.39 1.784-5.707 1.784z" />
     </svg>
-  );
+  )
 }
+
+const stats = [
+  { value: '15k+', label: 'Happy Customers' },
+  { value: '4.9/5', label: 'Average Rating' },
+  { value: '98%', label: 'Would Recommend' },
+  { value: '50k+', label: 'Items Sold' },
+]
 
 export function Testimonials() {
   return (
     <section
       id="testimonials"
       aria-label="Customer Testimonials"
-      className="bg-white py-20 sm:py-32"
+      className="bg-forest-950 py-20 sm:py-32"
     >
       <Container>
-        <div className="mx-auto max-w-2xl md:text-center">
-          <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-            Loved by Health-Conscious People
-          </h2>
-          <p className="mt-4 text-lg tracking-tight text-slate-700">
-            Join thousands of customers who are fueling their bodies with
-            nutritious, delicious meals every day.
+        {/* Section header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-16 gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-px w-8 bg-terracotta-400" />
+              <span className="text-xs font-semibold tracking-[0.22em] uppercase text-terracotta-400">
+                What they say
+              </span>
+            </div>
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium text-cream-100 leading-[0.92]">
+              Loved by
+              <br />
+              <em>Real People</em>
+            </h2>
+          </div>
+          <p className="text-sm leading-[1.75] text-cream-100/40 max-w-xs">
+            Join thousands fueling their bodies with nutritious, delicious
+            meals every day.
           </p>
         </div>
 
-        <ul
-          role="list"
-          className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:gap-8 lg:mt-20 lg:max-w-none lg:grid-cols-3"
-        >
-          {testimonials.map((column, columnIndex) => (
-            <li key={columnIndex}>
-              <ul role="list" className="flex flex-col gap-y-6 sm:gap-y-8">
-                {column.map((testimonial, testimonialIndex) => (
-                  <li key={testimonialIndex}>
-                    <figure className="relative rounded-2xl bg-slate-50 p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
-                      <QuoteIcon className="absolute top-6 left-6 fill-emerald-100" />
-                      <blockquote className="relative">
-                        <p className="text-lg tracking-tight text-slate-900">
-                          {testimonial.content}
-                        </p>
-                      </blockquote>
-                      <figcaption className="relative mt-6 flex items-center justify-between border-t border-slate-200 pt-6">
-                        <div>
-                          <div className="font-display text-base text-slate-900">
-                            {testimonial.author.name}
-                          </div>
-                          <div className="mt-1 text-sm text-slate-500">
-                            {testimonial.author.role}
-                          </div>
-                        </div>
-                        <div className="overflow-hidden rounded-full bg-emerald-100">
-                          <div className="h-14 w-14 flex items-center justify-center text-lg font-semibold text-emerald-600">
-                            {testimonial.author.initials}
-                          </div>
-                        </div>
-                      </figcaption>
-                    </figure>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
+        {/* Testimonials grid — flush with 1px separator lines */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-l border-t border-cream-100/10">
+          {/* eslint-disable react/no-array-index-key */}
+          {testimonials.map((testimonial, i) => (
+            <div
+              key={i}
+              className="p-5 sm:p-8 border-r border-b border-cream-100/10 hover:bg-forest-900 transition-colors duration-200 group"
+            >
+              <QuoteMarkIcon className="h-7 w-auto text-terracotta-500/50 mb-6 group-hover:text-terracotta-500/80 transition-colors" />
 
-        {/* Stats Section */}
-        <div className="mt-20 grid grid-cols-2 gap-8 md:grid-cols-4">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-emerald-600">15k+</div>
-            <div className="mt-2 text-sm text-slate-600">Happy Customers</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-teal-600">4.9/5</div>
-            <div className="mt-2 text-sm text-slate-600">Average Rating</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-emerald-600">98%</div>
-            <div className="mt-2 text-sm text-slate-600">Would Recommend</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-teal-600">50k+</div>
-            <div className="mt-2 text-sm text-slate-600">Products Sold</div>
-          </div>
+              <blockquote className="font-display text-[1.0625rem] italic leading-[1.7] text-cream-100/80">
+                &ldquo;
+                {testimonial.content}
+                &rdquo;
+              </blockquote>
+
+              <div className="mt-6 pt-5 border-t border-cream-100/10 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-amber-warm flex items-center justify-center shrink-0">
+                  <span className="text-[0.65rem] font-bold text-charcoal">
+                    {testimonial.author.initials}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-cream-100">
+                    {testimonial.author.name}
+                  </div>
+                  <div className="text-xs text-cream-100/40">
+                    {testimonial.author.role}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Stats row */}
+        <div className="mt-0 grid grid-cols-2 md:grid-cols-4 border-l border-t border-cream-100/10">
+          {stats.map(stat => (
+            <div
+              key={stat.label}
+              className="px-4 py-6 sm:px-8 sm:py-10 border-r border-b border-cream-100/10 text-center"
+            >
+              <div className="font-display text-4xl font-medium italic text-terracotta-400">
+                {stat.value}
+              </div>
+              <div className="mt-2 text-[0.65rem] tracking-[0.18em] uppercase text-cream-100/35">
+                {stat.label}
+              </div>
+            </div>
+          ))}
         </div>
       </Container>
     </section>
-  );
+  )
 }

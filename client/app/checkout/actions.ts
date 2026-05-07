@@ -1,122 +1,132 @@
-'use server';
+'use server'
 
-import Stripe from 'stripe';
-import { auth } from '@/lib/auth';
-import { getDb, schema } from '@tayo/database';
-import { eq } from 'drizzle-orm';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { getCart, clearCart } from '@/app/actions/cart';
-import { sendOrderConfirmation } from '@tayo/email';
+import { getDb, schema } from '@tayo/database'
+import { sendOrderConfirmation } from '@tayo/email'
+import { eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+import Stripe from 'stripe'
+import { clearCart, getCart } from '@/app/actions/cart'
+import { auth } from '@/lib/auth'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
-});
+})
 
-export type CheckoutState = {
-  success?: boolean;
-  message?: string;
+export interface CheckoutState {
+  success?: boolean
+  message?: string
   errors?: {
-    name?: string[];
-    email?: string[];
-    phone?: string[];
-    address?: string[];
-  };
-  clientSecret?: string;
-  orderId?: string;
-};
+    name?: string[]
+    email?: string[]
+    phone?: string[]
+    address?: string[]
+  }
+  clientSecret?: string
+  orderId?: string
+}
 
 export async function createPaymentIntent(
   prevState: CheckoutState,
-  formData: FormData
+  formData: FormData,
 ): Promise<CheckoutState> {
   try {
-    // Get session
-    const headersList = await headers();
+    // Get session — orders.userId is NOT NULL so authentication is required
+    const headersList = await headers()
     const session = await auth.api.getSession({
       headers: headersList,
-    });
+    })
+
+    if (!session) {
+      return {
+        success: false,
+        message: 'Please sign in to complete your purchase.',
+      }
+    }
 
     // Get form data
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const phone = formData.get('phone') as string;
-    const street = formData.get('street') as string;
-    const city = formData.get('city') as string;
-    const state = formData.get('state') as string;
-    const zipCode = formData.get('zipCode') as string;
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const phone = formData.get('phone') as string
+    const street = formData.get('street') as string
+    const city = formData.get('city') as string
+    const state = formData.get('state') as string
+    const zipCode = formData.get('zipCode') as string
 
     // Get cart items from database
-    const dbCartItems = await getCart();
+    const dbCartItems = await getCart()
 
     // Validate
-    const errors: CheckoutState['errors'] = {};
-    if (!name) errors.name = ['Name is required'];
-    if (!email) errors.email = ['Email is required'];
-    if (!street) errors.address = ['Address is required'];
+    const errors: CheckoutState['errors'] = {}
+    if (!name)
+      errors.name = ['Name is required']
+    if (!email)
+      errors.email = ['Email is required']
+    if (!street)
+      errors.address = ['Address is required']
 
     if (dbCartItems.length === 0) {
       return {
         success: false,
         message: 'Your cart is empty. Please add items before checking out.',
-      };
+      }
     }
 
     if (Object.keys(errors).length > 0) {
-      return { success: false, errors };
+      return { success: false, errors }
     }
 
     // Calculate total from database cart items
     const subtotal = dbCartItems.reduce((sum: number, item: any) => {
-      const price = parseFloat(item.product.price);
-      return sum + (price * item.quantity);
-    }, 0);
+      const price = Number.parseFloat(item.product.price)
+      return sum + price * item.quantity
+    }, 0)
 
-    const discountRaw = parseFloat((formData.get('discount') as string) ?? '0') || 0;
-    const couponCode = (formData.get('couponCode') as string) || null;
-    const tax = subtotal * 0.08; // 8% tax
-    const deliveryFee = subtotal >= 50 ? 0 : 5; // Free delivery over $50
-    const total = Math.max(0, subtotal - discountRaw) + tax + deliveryFee;
+    const discountRaw = Number.parseFloat((formData.get('discount') as string) ?? '0') || 0
+    const tax = subtotal * 0.08
+    const deliveryFee = subtotal >= 50 ? 0 : 5
+    const total = Math.max(0, subtotal - discountRaw) + tax + deliveryFee
+
+    // Serialize delivery address into deliveryInstructions — orders table has no address columns
+    const deliveryAddress = JSON.stringify({ name, street, city, state, zipCode })
 
     // Create Stripe payment intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.max(50, Math.round(total * 100)), // Convert to cents, min $0.50
+      amount: Math.max(50, Math.round(total * 100)),
       currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      automatic_payment_methods: { enabled: true },
       metadata: {
-        userId: session?.user.id || 'guest',
+        userId: session.user.id,
         customerName: name,
         customerEmail: email,
       },
-    });
+    })
 
     // Create pending order in database
-    const db = getDb();
-    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+    const db = getDb()
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`
 
     const [order] = await db.insert(schema.orders).values({
       orderNumber,
-      userId: session?.user.id || null,
+      userId: session.user.id,
       status: 'pending',
       paymentStatus: 'pending',
       subtotal: subtotal.toFixed(2),
       tax: tax.toFixed(2),
       deliveryFee: deliveryFee.toFixed(2),
       discount: discountRaw.toFixed(2),
-      couponCode: couponCode,
       total: total.toFixed(2),
       paymentIntentId: paymentIntent.id,
+      deliveryInstructions: deliveryAddress,
       customerName: name,
       customerEmail: email,
       customerPhone: phone || null,
-    }).returning();
+    }).returning()
 
     // Insert order items from database cart
     await db.insert(schema.orderItems).values(
-      dbCartItems.map((item: { productId: string; quantity: number; product: { name: string; price: string } }) => {
-        const unitPrice = parseFloat(item.product.price);
+      dbCartItems.map((item: { productId: string, quantity: number, product: { name: string, price: string } }) => {
+        const unitPrice = Number.parseFloat(item.product.price)
         return {
           orderId: order.id,
           productId: item.productId,
@@ -124,39 +134,42 @@ export async function createPaymentIntent(
           quantity: item.quantity,
           unitPrice: unitPrice.toFixed(2),
           subtotal: (unitPrice * item.quantity).toFixed(2),
-        };
-      })
-    );
+        }
+      }),
+    )
 
     // Clear cart after creating order
-    await clearCart();
+    await clearCart()
 
     return {
       success: true,
       clientSecret: paymentIntent.client_secret!,
       orderId: order.id,
-    };
-  } catch (error) {
-    console.error('Error creating payment intent:', error);
+    }
+  }
+  catch (error) {
+    console.error('Error creating payment intent:', error)
     return {
       success: false,
       message: 'Failed to create payment. Please try again.',
-    };
+    }
   }
 }
 
 export async function confirmOrder(orderId: string) {
   try {
-    const headersList = await headers();
-    const session = await auth.api.getSession({ headers: headersList });
-    const db = getDb();
+    const headersList = await headers()
+    const session = await auth.api.getSession({ headers: headersList })
+    const db = getDb()
 
     // Verify ownership: only the order owner (or guest orders with no userId) can confirm
     const existing = await db.query.orders.findFirst({
       where: eq(schema.orders.id, orderId),
-    });
-    if (!existing) throw new Error('Order not found');
-    if (existing.userId && existing.userId !== session?.user.id) throw new Error('Unauthorized');
+    })
+    if (!existing)
+      throw new Error('Order not found')
+    if (existing.userId && existing.userId !== session?.user.id)
+      throw new Error('Unauthorized')
 
     const [confirmed] = await db
       .update(schema.orders)
@@ -167,14 +180,14 @@ export async function confirmOrder(orderId: string) {
         updatedAt: new Date(),
       })
       .where(eq(schema.orders.id, orderId))
-      .returning();
+      .returning()
 
-    const items = await db.query.orderItems.findMany({ where: eq(schema.orderItems.orderId, orderId) });
+    const items = await db.query.orderItems.findMany({ where: eq(schema.orderItems.orderId, orderId) })
 
     if (confirmed.customerEmail) {
       await sendOrderConfirmation(confirmed.customerEmail, {
         orderNumber: confirmed.orderNumber,
-        items: items.map((i) => ({
+        items: items.map(i => ({
           name: i.productName,
           quantity: i.quantity,
           unitPrice: i.unitPrice,
@@ -184,12 +197,13 @@ export async function confirmOrder(orderId: string) {
         deliveryFee: confirmed.deliveryFee,
         total: confirmed.total,
         deliveryAddress: confirmed.customerName ?? '',
-      });
+      })
     }
 
-    redirect(`/orders/${orderId}?success=true`);
-  } catch (error) {
-    console.error('Error confirming order:', error);
-    throw error;
+    redirect(`/orders/${orderId}?success=true`)
+  }
+  catch (error) {
+    console.error('Error confirming order:', error)
+    throw error
   }
 }

@@ -1,12 +1,13 @@
-'use client';
+'use client'
 
-import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export function SuccessBanner() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(true)
 
-  if (!isVisible) return null;
+  if (!isVisible)
+    return null
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-50 border-b border-emerald-200">
@@ -32,5 +33,5 @@ export function SuccessBanner() {
         </div>
       </div>
     </div>
-  );
+  )
 }

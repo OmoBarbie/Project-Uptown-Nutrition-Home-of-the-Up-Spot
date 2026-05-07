@@ -1,41 +1,42 @@
-'use client';
+'use client'
 
 interface Variant {
-  id: string;
-  name: string;
-  type: string;
-  priceModifier: string;
-  stockQuantity: number;
-  isActive: boolean;
+  id: string
+  name: string
+  type: string
+  priceModifier: string
+  stockQuantity: number
+  isActive: boolean
 }
 
 interface Props {
-  variants: Variant[];
-  basePrice: string;
-  onSelect: (variantId: string | null, finalPrice: number) => void;
+  variants: Variant[]
+  basePrice: string
+  onSelect: (variantId: string | null, finalPrice: number) => void
 }
 
 export function VariantSelector({ variants, basePrice, onSelect }: Props) {
-  if (variants.length === 0) return null;
+  if (variants.length === 0)
+    return null
 
-  const types = [...new Set(variants.map((v) => v.type))];
+  const types = [...new Set(variants.map(v => v.type))]
 
   return (
     <div className="space-y-4">
-      {types.map((type) => (
+      {types.map(type => (
         <div key={type}>
           <p className="text-sm font-medium text-gray-700 capitalize mb-2">{type}</p>
           <div className="flex flex-wrap gap-2">
             {variants
-              .filter((v) => v.type === type && v.isActive)
+              .filter(v => v.type === type && v.isActive)
               .map((v) => {
-                const modifier = parseFloat(v.priceModifier);
-                const final = parseFloat(basePrice) + modifier;
+                const modifier = Number.parseFloat(v.priceModifier)
+                const final = Number.parseFloat(basePrice) + modifier
                 const label = modifier === 0
                   ? v.name
                   : modifier > 0
-                  ? `${v.name} (+$${modifier.toFixed(2)})`
-                  : `${v.name} (-$${Math.abs(modifier).toFixed(2)})`;
+                    ? `${v.name} (+$${modifier.toFixed(2)})`
+                    : `${v.name} (-$${Math.abs(modifier).toFixed(2)})`
 
                 return (
                   <button
@@ -47,11 +48,11 @@ export function VariantSelector({ variants, basePrice, onSelect }: Props) {
                   >
                     {label}
                   </button>
-                );
+                )
               })}
           </div>
         </div>
       ))}
     </div>
-  );
+  )
 }

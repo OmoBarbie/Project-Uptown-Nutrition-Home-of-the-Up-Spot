@@ -1,18 +1,14 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import setemiojo from '@setemiojo/eslint-config'
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-]);
-
-export default eslintConfig;
+export default setemiojo({
+  nextjs: true,
+}, {
+  rules: {
+    // Next.js apps use process.env everywhere — this is not a Node.js script
+    'node/prefer-global/process': 'off',
+    // Allow console.log in addition to warn/error in client code
+    'no-console': 'off',
+    // dangerouslySetInnerHTML is intentional for JSON-LD structured data
+    'react-dom/no-dangerously-set-innerhtml': 'off',
+  },
+})

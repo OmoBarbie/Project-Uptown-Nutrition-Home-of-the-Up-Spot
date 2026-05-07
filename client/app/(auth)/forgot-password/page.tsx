@@ -1,25 +1,28 @@
-'use client';
+'use client'
 
-import { useState, useTransition } from 'react';
-import { authClient } from '@/lib/auth-client';
+import { useState, useTransition } from 'react'
+import { authClient } from '@/lib/auth-client'
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState('');
-  const [isPending, startTransition] = useTransition();
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+  const [isPending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
     startTransition(async () => {
       const { error } = await authClient.requestPasswordReset({
         email,
         redirectTo: '/reset-password',
-      });
-      if (error) { setError(error.message ?? 'Something went wrong'); return; }
-      setSent(true);
-    });
+      })
+      if (error) {
+        setError(error.message ?? 'Something went wrong')
+        return
+      }
+      setSent(true)
+    })
   }
 
   if (sent) {
@@ -27,10 +30,13 @@ export default function ForgotPasswordPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-sm">
           <p className="text-2xl font-bold mb-2">Check your email</p>
-          <p className="text-gray-600">We sent a reset link to <strong>{email}</strong></p>
+          <p className="text-gray-600">
+            We sent a reset link to
+            <strong>{email}</strong>
+          </p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -43,7 +49,7 @@ export default function ForgotPasswordPage() {
             type="email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             className="w-full border rounded-md px-3 py-2"
           />
         </div>
@@ -54,5 +60,5 @@ export default function ForgotPasswordPage() {
         <p className="text-sm text-center"><a href="/login" className="text-green-700 underline">Back to login</a></p>
       </form>
     </div>
-  );
+  )
 }

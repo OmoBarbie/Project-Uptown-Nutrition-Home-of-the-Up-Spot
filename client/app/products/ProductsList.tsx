@@ -1,51 +1,52 @@
-"use client";
+'use client'
 
-import { StarIcon } from '@heroicons/react/20/solid';
-import { useCart } from "@/app/context/CartContext";
+import { StarIcon } from '@heroicons/react/20/solid'
+import { isTruthy } from '@setemiojo/utils'
+import { useCart } from '@/app/context/CartContext'
 
-type ProductVariant = {
-  id: string;
-  name: string;
-  type: string;
-  priceModifier: string;
-};
+interface ProductVariant {
+  id: string
+  name: string
+  type: string
+  priceModifier: string
+}
 
-type Product = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  price: string;
-  emoji: string;
-  category: string;
-  categorySlug: string;
-  isFeatured: boolean;
-  variants: ProductVariant[];
+interface Product {
+  id: string
+  name: string
+  slug: string
+  description: string
+  price: string
+  emoji: string
+  category: string
+  categorySlug: string
+  isFeatured: boolean
+  variants: ProductVariant[]
   rating: {
-    average: number;
-    count: number;
-  };
-};
+    average: number
+    count: number
+  }
+}
 
-type Category = {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-};
+interface Category {
+  id: string
+  name: string
+  slug: string
+  description?: string
+}
 
-type ProductsListProps = {
-  products: Product[];
-  categories: Category[];
-};
+interface ProductsListProps {
+  products: Product[]
+  categories: Category[]
+}
 
 function classNames(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(isTruthy).join(' ')
 }
 
 export function ProductsList({ products, categories }: ProductsListProps) {
-  const { addItem } = useCart();
-  const allCategories = ['All', ...categories.map(c => c.name)];
+  const { addItem } = useCart()
+  const allCategories = ['All', ...categories.map(c => c.name)]
 
   return (
     <>
@@ -61,7 +62,7 @@ export function ProductsList({ products, categories }: ProductsListProps) {
 
       {/* Category Filter */}
       <div className="mb-12 flex flex-wrap justify-center gap-3">
-        {allCategories.map((category) => (
+        {allCategories.map(category => (
           <button
             key={category}
             className="rounded-full px-6 py-2 text-sm font-semibold transition-colors bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400"
@@ -76,7 +77,7 @@ export function ProductsList({ products, categories }: ProductsListProps) {
         <h2 className="sr-only">Products</h2>
 
         <div className="-mx-px grid grid-cols-2 auto-rows-auto border-l border-slate-200 dark:border-slate-700 sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
-          {products.map((product) => (
+          {products.map(product => (
             <article
               key={product.id}
               className="group relative border-r border-b border-slate-200 dark:border-slate-700 p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors grid [grid-template-rows:subgrid] [grid-row:span_10]"
@@ -107,7 +108,10 @@ export function ProductsList({ products, categories }: ProductsListProps) {
               <div className="mt-2 text-center min-h-[1.5rem]">
                 {product.variants.length > 0 && (
                   <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                    {product.variants.length} {product.variants[0].type}s
+                    {product.variants.length}
+                    {' '}
+                    {product.variants[0].type}
+                    s
                   </span>
                 )}
               </div>
@@ -119,9 +123,13 @@ export function ProductsList({ products, categories }: ProductsListProps) {
 
               {/* Rating Stars */}
               <div className="mt-3 flex justify-center">
-                <p className="sr-only">{product.rating.average} out of 5 stars</p>
+                <p className="sr-only">
+                  {product.rating.average}
+                  {' '}
+                  out of 5 stars
+                </p>
                 <div className="flex items-center">
-                  {[0, 1, 2, 3, 4].map((rating) => (
+                  {[0, 1, 2, 3, 4].map(rating => (
                     <StarIcon
                       key={rating}
                       aria-hidden="true"
@@ -136,21 +144,24 @@ export function ProductsList({ products, categories }: ProductsListProps) {
 
               {/* Review Count */}
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 text-center">
-                {product.rating.count} reviews
+                {product.rating.count}
+                {' '}
+                reviews
               </p>
 
               {/* Price */}
               <p className="mt-4 text-base font-medium text-slate-900 dark:text-white text-center">
-                ${product.price}
+                $
+                {product.price}
               </p>
 
               {/* Add to Cart Button */}
               <button
                 type="button"
                 onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  addItem(product.id);
+                  e.preventDefault()
+                  e.stopPropagation()
+                  addItem(product.id)
                 }}
                 className="relative z-10 mt-4 w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition-colors"
               >
@@ -173,5 +184,5 @@ export function ProductsList({ products, categories }: ProductsListProps) {
         </div>
       </div>
     </>
-  );
+  )
 }

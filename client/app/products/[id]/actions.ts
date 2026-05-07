@@ -1,28 +1,32 @@
-'use server';
+'use server'
 
-import { getDb, schema } from '@tayo/database';
-import { eq, and } from 'drizzle-orm';
-import { revalidatePath } from 'next/cache';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
+import { getDb, schema } from '@tayo/database'
+import { and, eq } from 'drizzle-orm'
+import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
 
 export async function submitReview(productId: string, data: {
-  rating: number;
-  title: string;
-  comment: string;
+  rating: number
+  title: string
+  comment: string
 }) {
-  const db = getDb();
-  const headersList = await headers();
-  const session = await auth.api.getSession({ headers: headersList });
-  if (!session) return { error: 'You must be logged in to leave a review' };
+  const db = getDb()
+  const headersList = await headers()
+  const session = await auth.api.getSession({ headers: headersList })
+  if (!session)
+    return { error: 'You must be logged in to leave a review' }
 
-  if (data.rating < 1 || data.rating > 5) return { error: 'Invalid rating' };
-  if (data.comment.trim().length < 20) return { error: 'Comment must be at least 20 characters' };
+  if (data.rating < 1 || data.rating > 5)
+    return { error: 'Invalid rating' }
+  if (data.comment.trim().length < 20)
+    return { error: 'Comment must be at least 20 characters' }
 
   const existing = await db.query.reviews.findFirst({
     where: and(eq(schema.reviews.productId, productId), eq(schema.reviews.userId, session.user.id)),
-  });
-  if (existing) return { error: 'You have already reviewed this product' };
+  })
+  if (existing)
+    return { error: 'You have already reviewed this product' }
 
   const verifiedOrder = await db.query.orderItems.findFirst({
     with: {
@@ -31,11 +35,11 @@ export async function submitReview(productId: string, data: {
       },
     },
     where: eq(schema.orderItems.productId, productId),
-  });
+  })
 
-  const isVerifiedPurchase = !!verifiedOrder &&
-    verifiedOrder.order.userId === session.user.id &&
-    verifiedOrder.order.status === 'completed';
+  const isVerifiedPurchase = !!verifiedOrder
+    && verifiedOrder.order.userId === session.user.id
+    && verifiedOrder.order.status === 'completed'
 
   await db.insert(schema.reviews).values({
     productId,
@@ -45,28 +49,30 @@ export async function submitReview(productId: string, data: {
     comment: data.comment.trim(),
     isVerifiedPurchase,
     isApproved: false,
-  });
+  })
 
-  revalidatePath(`/products/${productId}`);
-  return { success: true };
+  revalidatePath(`/products/${productId}`)
+  return { success: true }
 }
 
 export async function markReviewHelpful(reviewId: string, isHelpful: boolean) {
-  const db = getDb();
-  const headersList = await headers();
-  const session = await auth.api.getSession({ headers: headersList });
-  if (!session) return;
+  const db = getDb()
+  const headersList = await headers()
+  const session = await auth.api.getSession({ headers: headersList })
+  if (!session)
+    return
 
   const existing = await db.query.reviewHelpful.findFirst({
     where: and(eq(schema.reviewHelpful.reviewId, reviewId), eq(schema.reviewHelpful.userId, session.user.id)),
-  });
+  })
 
   if (existing) {
-    await db.update(schema.reviewHelpful).set({ isHelpful }).where(eq(schema.reviewHelpful.id, existing.id));
-  } else {
-    await db.insert(schema.reviewHelpful).values({ reviewId, userId: session.user.id, isHelpful });
+    await db.update(schema.reviewHelpful).set({ isHelpful }).where(eq(schema.reviewHelpful.id, existing.id))
+  }
+  else {
+    await db.insert(schema.reviewHelpful).values({ reviewId, userId: session.user.id, isHelpful })
     if (isHelpful) {
-      await db.update(schema.reviews).set({ helpfulCount: schema.reviews.helpfulCount + 1 }).where(eq(schema.reviews.id, reviewId));
+      await db.update(schema.reviews).set({ helpfulCount: schema.reviews.helpfulCount + 1 }).where(eq(schema.reviews.id, reviewId))
     }
   }
 }
