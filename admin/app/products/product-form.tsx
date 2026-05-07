@@ -4,6 +4,17 @@ import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { ProductFormState } from './actions';
 import type { Category } from '@tayo/database';
+import { VariantsEditor } from './variants-editor';
+
+interface Variant {
+  id?: string;
+  name: string;
+  type: string;
+  priceModifier: string;
+  stockQuantity: number;
+  isActive: boolean;
+  sortOrder: number;
+}
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
@@ -29,6 +40,7 @@ type ProductFormProps = {
     categoryId: string;
     emoji: string;
     stock: number;
+    variants?: Variant[];
   };
   isEdit?: boolean;
 };
@@ -164,6 +176,10 @@ export function ProductForm({ action, categories, initialData, isEdit = false }:
             <p className="mt-2 text-sm text-red-600">{state.errors.emoji}</p>
           )}
         </div>
+      </div>
+
+      <div className="pt-4 border-t border-slate-200">
+        <VariantsEditor initial={initialData?.variants ?? []} />
       </div>
 
       <div className="flex items-center justify-end gap-x-3 pt-4 border-t border-slate-200">

@@ -90,6 +90,20 @@ export async function createProduct(
 
     const [newProduct] = await db.insert(schema.products).values(productData).returning();
 
+    // Handle variants
+    const variantsRaw = formData.get('variants') as string;
+    const variants: Array<{ id?: string; name: string; type: string; priceModifier: string; stockQuantity: number; isActive: boolean; sortOrder: number }> = variantsRaw ? JSON.parse(variantsRaw) : [];
+
+    if (variants.length > 0) {
+      for (const v of variants) {
+        await db.insert(schema.productVariants).values({
+          productId: newProduct.id,
+          name: v.name, type: v.type, priceModifier: v.priceModifier,
+          stockQuantity: v.stockQuantity, isActive: v.isActive, sortOrder: v.sortOrder,
+        });
+      }
+    }
+
     // Audit log
     await createAuditLog(session.user.id, {
       action: 'create',
@@ -187,6 +201,34 @@ export async function updateProduct(
       .update(schema.products)
       .set(updatedData)
       .where(eq(schema.products.id, productId));
+
+    // Handle variants
+    const variantsRaw = formData.get('variants') as string;
+    const variants: Array<{ id?: string; name: string; type: string; priceModifier: string; stockQuantity: number; isActive: boolean; sortOrder: number }> = variantsRaw ? JSON.parse(variantsRaw) : [];
+
+    if (variants.length > 0) {
+      // Delete removed variants
+      const incomingIds = variants.filter((v) => v.id).map((v) => v.id as string);
+      const existing = await db.query.productVariants.findMany({ where: eq(schema.productVariants.productId, productId) });
+      for (const ev of existing) {
+        if (!incomingIds.includes(ev.id)) {
+          await db.delete(schema.productVariants).where(eq(schema.productVariants.id, ev.id));
+        }
+      }
+      for (const v of variants) {
+        if (v.id) {
+          await db.update(schema.productVariants)
+            .set({ name: v.name, type: v.type, priceModifier: v.priceModifier, stockQuantity: v.stockQuantity, isActive: v.isActive, sortOrder: v.sortOrder, updatedAt: new Date() })
+            .where(eq(schema.productVariants.id, v.id));
+        } else {
+          await db.insert(schema.productVariants).values({
+            productId,
+            name: v.name, type: v.type, priceModifier: v.priceModifier,
+            stockQuantity: v.stockQuantity, isActive: v.isActive, sortOrder: v.sortOrder,
+          });
+        }
+      }
+    }
 
     // Audit log
     await createAuditLog(session.user.id, {
