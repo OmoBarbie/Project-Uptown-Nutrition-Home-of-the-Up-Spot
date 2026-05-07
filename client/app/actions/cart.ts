@@ -15,7 +15,7 @@ async function getOrCreateSessionId(): Promise<string> {
   if (!sessionId) {
     sessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     cookieStore.set('cart_session_id', sessionId, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
@@ -233,7 +233,10 @@ export async function mergeGuestCart(userId: string, sessionId: string) {
       const existingItem = await db.query.cartItems.findFirst({
         where: and(
           eq(schema.cartItems.cartId, userCart.id),
-          eq(schema.cartItems.productId, item.productId)
+          eq(schema.cartItems.productId, item.productId),
+          item.variantId
+            ? eq(schema.cartItems.variantId, item.variantId)
+            : isNull(schema.cartItems.variantId)
         ),
       });
 
@@ -250,6 +253,7 @@ export async function mergeGuestCart(userId: string, sessionId: string) {
         await db.insert(schema.cartItems).values({
           cartId: userCart.id,
           productId: item.productId,
+          variantId: item.variantId ?? null,
           quantity: item.quantity,
         });
       }

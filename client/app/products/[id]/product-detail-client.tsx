@@ -26,14 +26,14 @@ interface Product {
 
 interface Props {
   product: Product;
-  ratings: { averageRating: string; totalReviews: number } | null;
+  ratings: { averageRating: number; totalReviews: number } | null;
 }
 
 export function ProductDetailClient({ product, ratings }: Props) {
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [displayPrice, setDisplayPrice] = useState(parseFloat(product.price));
 
-  const hasNutrition = [product.calories, product.protein, product.carbs].some((v) => v !== null);
+  const hasNutrition = [product.calories, product.protein, product.carbs, product.fiber, product.sugar, product.fat].some((v) => v !== null);
   const stockForDisplay = selectedVariantId
     ? (product.variants.find((v) => v.id === selectedVariantId)?.stockQuantity ?? product.stockQuantity)
     : product.stockQuantity;
@@ -62,7 +62,7 @@ export function ProductDetailClient({ product, ratings }: Props) {
           {/* Ratings */}
           {ratings && ratings.totalReviews > 0 && (
             <a href="#reviews" className="text-sm text-gray-600 hover:underline">
-              ★ {parseFloat(ratings.averageRating).toFixed(1)} ({ratings.totalReviews} reviews)
+              ★ {ratings.averageRating.toFixed(1)} ({ratings.totalReviews} reviews)
             </a>
           )}
 

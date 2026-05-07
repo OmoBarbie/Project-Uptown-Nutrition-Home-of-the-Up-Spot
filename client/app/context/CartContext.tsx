@@ -16,7 +16,7 @@ export type CartItem = {
 type CartContextType = {
   items: CartItem[];
   optimisticItems: CartItem[];
-  addItem: (productId: string) => Promise<void>;
+  addItem: (productId: string, variantId?: string | null, quantity?: number) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   refreshCart: () => Promise<void>;
@@ -136,16 +136,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isInitialized, refreshCart]);
 
-  const addItem = async (productId: string) => {
+  const addItem = async (productId: string, variantId?: string | null, quantity?: number) => {
     startTransition(async () => {
       setOptimisticItems({ type: 'add', productId });
 
       try {
-        const result = await addToCart(productId);
+        const result = await addToCart(productId, variantId, quantity);
         if (result.success) {
           await refreshCart();
           // Broadcast to other devices via PartyKit
-          sendMessage('item_added', { productId });
+          sendMessage('item_added', { productId, variantId });
         } else {
           console.error('Failed to add item:', result.error);
           // Revert optimistic update on error
