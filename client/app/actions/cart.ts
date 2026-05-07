@@ -55,7 +55,7 @@ async function getOrCreateCart() {
   return { cart, userId, sessionId };
 }
 
-export async function addToCart(productId: string) {
+export async function addToCart(productId: string, variantId?: string | null, quantity = 1) {
   try {
     const db = getDb();
     const { cart } = await getOrCreateCart();
@@ -64,7 +64,10 @@ export async function addToCart(productId: string) {
     const existingItem = await db.query.cartItems.findFirst({
       where: and(
         eq(schema.cartItems.cartId, cart.id),
-        eq(schema.cartItems.productId, productId)
+        eq(schema.cartItems.productId, productId),
+        variantId
+          ? eq(schema.cartItems.variantId, variantId)
+          : isNull(schema.cartItems.variantId)
       ),
     });
 
@@ -72,7 +75,7 @@ export async function addToCart(productId: string) {
       // Update quantity
       await db.update(schema.cartItems)
         .set({
-          quantity: existingItem.quantity + 1,
+          quantity: existingItem.quantity + quantity,
           updatedAt: new Date()
         })
         .where(eq(schema.cartItems.id, existingItem.id));
@@ -81,12 +84,12 @@ export async function addToCart(productId: string) {
       await db.insert(schema.cartItems).values({
         cartId: cart.id,
         productId,
-        quantity: 1,
+        variantId: variantId ?? null,
+        quantity,
       });
     }
 
     revalidatePath('/cart');
-    revalidatePath('/products');
     return { success: true };
   } catch (error) {
     console.error('Error adding to cart:', error);
