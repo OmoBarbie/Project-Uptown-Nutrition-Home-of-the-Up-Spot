@@ -19,26 +19,21 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => { setMounted(true) }, [])
 
-  // Redirect if cart is empty
   useEffect(() => {
-    if (mounted && optimisticItems.length === 0) {
-      router.push('/cart')
-    }
+    if (mounted && optimisticItems.length === 0) router.push('/cart')
   }, [mounted, optimisticItems.length, router])
 
   if (!mounted) {
     return (
       <>
         <Header />
-        <main className="min-h-screen bg-white py-16">
+        <main className="min-h-screen bg-background py-16">
           <Container>
-            <div className="animate-pulse">
-              <div className="h-8 bg-slate-200 rounded w-1/4 mb-8"></div>
-              <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-sand w-1/4" />
+              <div className="h-4 bg-sand w-1/2" />
             </div>
           </Container>
         </main>
@@ -47,9 +42,7 @@ export default function CheckoutPage() {
     )
   }
 
-  if (optimisticItems.length === 0) {
-    return null
-  }
+  if (optimisticItems.length === 0) return null
 
   const tax = subtotal * 0.08
   const deliveryFee = subtotal >= 50 ? 0 : 5
@@ -58,115 +51,107 @@ export default function CheckoutPage() {
   return (
     <>
       <Header />
-      <main className="bg-white dark:bg-slate-950 min-h-screen">
-        <Container className="py-16">
-          <div className="mx-auto max-w-7xl">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-8">
-              Checkout
+      <main className="bg-background min-h-screen">
+        <Container className="py-12 sm:py-16">
+          {/* Heading */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="h-px w-8 bg-terracotta-500" />
+              <span className="text-xs font-semibold tracking-[0.22em] uppercase text-terracotta-500">
+                Secure Checkout
+              </span>
+            </div>
+            <h1 className="font-display text-4xl sm:text-5xl font-medium text-charcoal">
+              Complete Your Order
             </h1>
+          </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Checkout Form */}
-              <div>
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    mode: 'payment',
-                    amount: Math.round(total * 100),
-                    currency: 'usd',
-                    appearance: {
-                      theme: 'stripe',
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+            {/* Checkout form */}
+            <div className="lg:col-span-3">
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  mode: 'payment',
+                  amount: Math.round(total * 100),
+                  currency: 'usd',
+                  appearance: {
+                    theme: 'flat',
+                    variables: {
+                      colorPrimary: '#3d7a5e',
+                      colorBackground: '#f5f0e8',
+                      colorText: '#2a2118',
+                      colorDanger: '#dc2626',
+                      borderRadius: '0px',
+                      fontFamily: 'DM Sans, sans-serif',
                     },
-                  }}
-                >
-                  <CheckoutForm
-                    cartItems={optimisticItems}
-                    subtotal={subtotal}
-                    tax={tax}
-                    deliveryFee={deliveryFee}
-                    total={total}
-                    userEmail={session?.user.email}
-                    userName={session?.user.name}
-                  />
-                </Elements>
-              </div>
+                    rules: {
+                      '.Input': { border: '1px solid #d4c9b8', padding: '10px 12px' },
+                      '.Input:focus': { border: '1px solid #3d7a5e', boxShadow: 'none' },
+                      '.Label': { fontSize: '0.8rem', fontWeight: '600', letterSpacing: '0.03em' },
+                    },
+                  },
+                }}
+              >
+                <CheckoutForm
+                  cartItems={optimisticItems}
+                  subtotal={subtotal}
+                  tax={tax}
+                  deliveryFee={deliveryFee}
+                  total={total}
+                  userEmail={session?.user.email}
+                  userName={session?.user.name}
+                />
+              </Elements>
+            </div>
 
-              {/* Order Summary */}
-              <div>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-6 sticky top-8">
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                    Order Summary
-                  </h2>
+            {/* Order summary */}
+            <aside className="lg:col-span-2">
+              <div className="border border-sand p-6 sticky top-24">
+                <h2 className="font-display text-2xl font-medium text-charcoal mb-5">Order Summary</h2>
 
-                  {/* Cart Items */}
-                  <div className="space-y-4 mb-6">
-                    {optimisticItems.map(item => (
-                      <div key={item.id} className="flex gap-4">
-                        <div className="text-4xl">{item.imageSrc}</div>
-                        <div className="flex-1">
-                          <h3 className="text-sm font-medium text-slate-900 dark:text-white">
-                            {item.name}
-                          </h3>
-                          {(item.flavor || item.size) && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {item.flavor || item.size}
-                            </p>
-                          )}
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            Qty:
-                            {' '}
-                            {item.quantity}
-                          </p>
-                        </div>
-                        <div className="text-sm font-medium text-slate-900 dark:text-white">
-                          $
-                          {(Number.parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
-                        </div>
+                <div className="divide-y divide-sand">
+                  {optimisticItems.map(item => (
+                    <div key={item.id} className="flex gap-4 py-4">
+                      <div className="text-3xl w-10 shrink-0">{item.imageSrc}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-charcoal truncate">{item.name}</p>
+                        <p className="text-xs text-foreground/50 mt-0.5">Qty {item.quantity}</p>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Price Breakdown */}
-                  <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Subtotal</span>
-                      <span className="text-slate-900 dark:text-white">
-                        $
-                        {subtotal.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Tax (8%)</span>
-                      <span className="text-slate-900 dark:text-white">
-                        $
-                        {tax.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Delivery</span>
-                      <span className="text-slate-900 dark:text-white">
-                        {deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
-                      </span>
-                    </div>
-                    {subtotal < 50 && (
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                        Add $
-                        {(50 - subtotal).toFixed(2)}
-                        {' '}
-                        more for free delivery!
+                      <p className="text-sm font-semibold text-charcoal shrink-0">
+                        ${(Number.parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
                       </p>
-                    )}
-                    <div className="flex justify-between text-base font-semibold pt-2 border-t border-slate-200 dark:border-slate-700">
-                      <span className="text-slate-900 dark:text-white">Total</span>
-                      <span className="text-slate-900 dark:text-white">
-                        $
-                        {total.toFixed(2)}
-                      </span>
                     </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-sand pt-4 space-y-2 mt-2">
+                  {[
+                    { label: 'Subtotal', value: `$${subtotal.toFixed(2)}` },
+                    { label: 'Tax (8%)', value: `$${tax.toFixed(2)}` },
+                    { label: 'Delivery', value: deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`, highlight: deliveryFee === 0 },
+                  ].map(({ label, value, highlight }) => (
+                    <div key={label} className="flex justify-between text-sm">
+                      <span className="text-foreground/60">{label}</span>
+                      <span className={highlight ? 'text-forest-600 font-semibold' : 'text-charcoal'}>{value}</span>
+                    </div>
+                  ))}
+
+                  {subtotal < 50 && (
+                    <p className="text-xs text-terracotta-500 px-3 py-2 bg-terracotta-500/8">
+                      Add ${(50 - subtotal).toFixed(2)} more for free delivery
+                    </p>
+                  )}
+
+                  <div className="flex justify-between pt-3 border-t border-sand">
+                    <span className="font-display text-lg font-medium text-charcoal">Total</span>
+                    <span className="font-display text-lg font-medium text-charcoal">${total.toFixed(2)}</span>
                   </div>
                 </div>
+
+                <p className="mt-5 text-xs text-foreground/40 text-center">🔒 Secured by Stripe</p>
               </div>
-            </div>
+            </aside>
           </div>
         </Container>
       </main>

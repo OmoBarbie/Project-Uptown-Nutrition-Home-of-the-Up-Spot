@@ -27,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${bricolage.variable} ${jakarta.variable}`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${bricolage.variable} ${jakarta.variable}`} suppressHydrationWarning>
         <SessionProvider>
           <AdminLayout>{children}</AdminLayout>
         </SessionProvider>

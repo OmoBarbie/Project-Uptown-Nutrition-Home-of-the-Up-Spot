@@ -85,8 +85,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${dmSans.variable} ${cormorant.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${dmSans.variable} ${cormorant.variable} antialiased`} suppressHydrationWarning>
         <CartProvider>{children}</CartProvider>
       </body>
     </html>
