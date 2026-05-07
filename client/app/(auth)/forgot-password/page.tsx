@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setError('');
     startTransition(async () => {
-      const { error } = await authClient.forgetPassword({
+      const { error } = await authClient.requestPasswordReset({
         email,
         redirectTo: '/reset-password',
       });
