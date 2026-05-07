@@ -2,21 +2,61 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Container } from "@/components/Container";
 import { ProductsList } from "./ProductsList";
+import { ProductFilters } from "./product-filters";
 import { getDb, schema } from '@tayo/database';
-import { eq } from 'drizzle-orm';
+import { eq, ilike, or, asc, desc, count, and } from 'drizzle-orm';
 
-async function getProductsData() {
+const PAGE_SIZE = 12;
+
+interface SearchParams {
+  q?: string;
+  category?: string;
+  sort?: string;
+  page?: string;
+}
+
+export const metadata = {
+  title: 'Products',
+  description: 'Browse our full range of fresh groceries and healthy foods.',
+};
+
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const { q, category, sort, page } = await searchParams;
   const db = getDb();
+  const currentPage = Math.max(1, parseInt(page ?? '1'));
+  const offset = (currentPage - 1) * PAGE_SIZE;
 
-  // Fetch all active categories
   const categories = await db.query.categories.findMany({
     where: eq(schema.categories.isActive, true),
-    orderBy: (categories, { asc }) => [asc(categories.sortOrder)],
+    orderBy: (c, { asc }) => [asc(c.sortOrder)],
   });
 
-  // Fetch all active products with relations
+  const conditions: ReturnType<typeof eq>[] = [eq(schema.products.isActive, true)];
+
+  if (q) {
+    conditions.push(
+      or(
+        ilike(schema.products.name, `%${q}%`),
+        ilike(schema.products.description, `%${q}%`)
+      ) as ReturnType<typeof eq>
+    );
+  }
+
+  if (category) {
+    const cat = await db.query.categories.findFirst({ where: eq(schema.categories.slug, category) });
+    if (cat) conditions.push(eq(schema.products.categoryId, cat.id));
+  }
+
+  let orderBy;
+  if (sort === 'price_asc') orderBy = asc(schema.products.price);
+  else if (sort === 'price_desc') orderBy = desc(schema.products.price);
+  else if (sort === 'newest') orderBy = desc(schema.products.createdAt);
+  else orderBy = desc(schema.products.isFeatured);
+
+  const [{ total }] = await db.select({ total: count() }).from(schema.products).where(and(...conditions));
+
   const products = await db.query.products.findMany({
-    where: eq(schema.products.isActive, true),
+    where: and(...conditions),
     with: {
       category: true,
       variants: {
@@ -24,12 +64,13 @@ async function getProductsData() {
         orderBy: (variants, { asc }) => [asc(variants.sortOrder)],
       },
     },
+    orderBy,
+    limit: PAGE_SIZE,
+    offset,
   });
 
-  // Fetch product ratings
   const productRatings = await db.query.productRatings.findMany();
 
-  // Transform products to match ProductsList component expectations
   const productsWithRatings = products.map(product => {
     const rating = productRatings.find(r => r.productId === product.id);
     return {
@@ -48,36 +89,47 @@ async function getProductsData() {
         type: v.type,
         priceModifier: v.priceModifier,
       })),
-      rating: rating ? {
-        average: rating.averageRating,
-        count: rating.totalReviews,
-      } : {
-        average: 0,
-        count: 0,
-      },
+      rating: rating ? { average: rating.averageRating, count: rating.totalReviews } : { average: 0, count: 0 },
     };
   });
 
-  return {
-    products: productsWithRatings,
-    categories: categories.map(c => ({
-      id: c.id,
-      name: c.name,
-      slug: c.slug,
-      description: c.description,
-    })),
-  };
-}
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
-export default async function ProductsPage() {
-  const { products, categories } = await getProductsData();
+  const categoryFilters = categories.map(c => ({ id: c.id, name: c.name, slug: c.slug }));
 
   return (
     <>
       <Header />
       <main className="bg-white dark:bg-slate-950">
         <Container className="py-16">
-          <ProductsList products={products} categories={categories} />
+          <ProductFilters
+            categories={categoryFilters}
+            currentQ={q ?? ''}
+            currentCategory={category ?? ''}
+            currentSort={sort ?? ''}
+          />
+          <ProductsList products={productsWithRatings} categories={categoryFilters} />
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-8">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                const params = new URLSearchParams({
+                  ...(q && { q }),
+                  ...(category && { category }),
+                  ...(sort && { sort }),
+                  page: String(p),
+                });
+                return (
+                  <a
+                    key={p}
+                    href={`/products?${params}`}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium ${p === currentPage ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                  >
+                    {p}
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </Container>
       </main>
       <Footer />
