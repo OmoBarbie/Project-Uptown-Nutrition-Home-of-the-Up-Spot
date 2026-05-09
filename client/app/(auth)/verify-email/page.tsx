@@ -7,18 +7,22 @@ import { authClient } from '@/lib/auth-client'
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
+    () => searchParams.get('token') ? 'loading' : 'error',
+  )
 
   useEffect(() => {
+    let cancelled = false
     const token = searchParams.get('token')
     if (!token) {
-      setStatus('error')
       return
     }
 
     let timeoutId: ReturnType<typeof setTimeout>
     authClient.verifyEmail({ query: { token } })
       .then(({ error }) => {
+        if (cancelled)
+          return
         if (error) {
           setStatus('error')
           return
@@ -26,8 +30,14 @@ function VerifyEmailContent() {
         setStatus('success')
         timeoutId = setTimeout(() => router.push('/account'), 2000)
       })
-      .catch(() => setStatus('error'))
-    return () => clearTimeout(timeoutId)
+      .catch(() => {
+        if (!cancelled)
+          setStatus('error')
+      })
+    return () => {
+      cancelled = true
+      clearTimeout(timeoutId)
+    }
   }, [searchParams, router])
 
   return (

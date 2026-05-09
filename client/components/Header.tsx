@@ -217,9 +217,7 @@ export function Header() {
                 )}
               </Link>
 
-              <div className="hidden md:block">
-                <UserMenu />
-              </div>
+              <UserMenu />
 
               <div className="-mr-1 md:hidden">
                 <MobileNavigation />

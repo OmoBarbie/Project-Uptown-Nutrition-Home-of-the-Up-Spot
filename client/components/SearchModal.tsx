@@ -75,13 +75,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       })
 
   const handleAddToCart = (product: Product) => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      imageSrc: product.image,
-      imageAlt: product.name,
-    })
+    addItem(String(product.id))
   }
 
   return (

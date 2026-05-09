@@ -8,3 +8,4 @@ export * from './auth';
 export * from './audit';
 export * from './coupons';
 export * from './relations';
+export * from './newsletter';

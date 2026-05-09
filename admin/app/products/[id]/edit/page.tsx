@@ -27,36 +27,32 @@ async function getProduct(id: string) {
 
 async function getCategories() {
   const db = getDb();
-  return await db.select().from(schema.categories).where(schema.categories.isActive).orderBy(asc(schema.categories.sortOrder));
+  return await db.select().from(schema.categories).where(eq(schema.categories.isActive, true)).orderBy(asc(schema.categories.sortOrder));
 }
 
-export default async function EditProductPage({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id);
+export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const product = await getProduct(id);
 
   if (!product) {
     notFound();
   }
 
   const categories = await getCategories();
-  const updateProductWithId = updateProduct.bind(null, params.id);
+  const updateProductWithId = updateProduct.bind(null, id);
 
   return (
     <div>
-      <div className="mb-8">
-        <Link
-          href="/products"
-          className="inline-flex items-center gap-x-1 text-sm font-medium text-slate-600 hover:text-slate-900 mb-4"
-        >
-          <ChevronLeftIcon className="h-4 w-4" />
+      <div style={{ marginBottom: '2rem' }}>
+        <Link href="/products" className="btn btn-ghost btn-sm" style={{ marginBottom: '1rem' }}>
+          <ChevronLeftIcon style={{ width: 14, height: 14 }} />
           Back to Products
         </Link>
-        <h1 className="text-3xl font-bold text-slate-900">Edit Product</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Update product information
-        </p>
+        <h1 className="page-title">Edit Product</h1>
+        <p className="page-subtitle">Update product information</p>
       </div>
 
-      <div className="bg-white shadow-sm ring-1 ring-slate-200 rounded-lg p-6">
+      <div className="card-padded">
         <ProductForm
           action={updateProductWithId}
           categories={categories}
@@ -66,6 +62,7 @@ export default async function EditProductPage({ params }: { params: { id: string
             price: product.price,
             categoryId: product.categoryId,
             emoji: product.emoji || '',
+            imageUrl: product.imageUrl || '',
             stock: product.stockQuantity,
             variants: product.variants.map((v) => ({
               id: v.id,

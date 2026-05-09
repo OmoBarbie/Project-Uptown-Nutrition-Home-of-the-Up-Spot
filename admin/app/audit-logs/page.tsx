@@ -1,5 +1,6 @@
 import { getDb, schema } from '@tayo/database';
-import { eq, and, gte, lte } from 'drizzle-orm';
+import { eq, and, gte, lte, desc } from 'drizzle-orm';
+import { FunnelIcon } from '@heroicons/react/24/outline';
 
 export default async function AuditLogsPage({
   searchParams,
@@ -9,61 +10,83 @@ export default async function AuditLogsPage({
   const { entity, from, to } = await searchParams;
   const db = getDb();
 
-  const logs = await db.query.auditLogs.findMany({
-    where: and(
-      entity ? eq(schema.auditLogs.entityType, entity) : undefined,
-      from ? gte(schema.auditLogs.createdAt, new Date(from)) : undefined,
-      to ? lte(schema.auditLogs.createdAt, new Date(to)) : undefined,
-    ),
-    orderBy: (l, { desc }) => [desc(l.createdAt)],
-    limit: 100,
-  });
+  const logs = await db
+    .select({
+      id: schema.auditLogs.id,
+      action: schema.auditLogs.action,
+      entityType: schema.auditLogs.entityType,
+      entityId: schema.auditLogs.entityId,
+      changes: schema.auditLogs.changes,
+      createdAt: schema.auditLogs.createdAt,
+      userName: schema.users.name,
+      userEmail: schema.users.email,
+    })
+    .from(schema.auditLogs)
+    .leftJoin(schema.users, eq(schema.auditLogs.userId, schema.users.id))
+    .where(
+      and(
+        entity ? eq(schema.auditLogs.entityType, entity) : undefined,
+        from ? gte(schema.auditLogs.createdAt, new Date(from)) : undefined,
+        to ? lte(schema.auditLogs.createdAt, new Date(to)) : undefined,
+      ),
+    )
+    .orderBy(desc(schema.auditLogs.createdAt))
+    .limit(100);
+
+  const actionClass = (a: string) => {
+    if (a === 'create') return 'badge badge-success';
+    if (a === 'delete') return 'badge badge-danger';
+    return 'badge badge-blue';
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Audit Logs</h1>
-      <form className="flex gap-3 mb-6 flex-wrap">
-        <select name="entity" defaultValue={entity} className="border rounded-md px-2 py-1.5 text-sm">
+    <div>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Audit Logs</h1>
+          <p className="page-subtitle">Last {logs.length} recorded actions</p>
+        </div>
+      </div>
+
+      <form className="filter-bar" style={{ borderRadius: 'var(--radius) var(--radius) 0 0' }}>
+        <FunnelIcon style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+        <select name="entity" defaultValue={entity ?? ''} style={{ width: 'auto', flex: '0 0 auto' }}>
           <option value="">All entities</option>
-          {['product', 'order', 'user', 'category'].map((e) => (
-            <option key={e} value={e}>
-              {e}
-            </option>
+          {['product','order','user','category'].map(e => (
+            <option key={e} value={e}>{e}</option>
           ))}
         </select>
-        <input type="date" name="from" defaultValue={from} className="border rounded-md px-2 py-1.5 text-sm" />
-        <input type="date" name="to" defaultValue={to} className="border rounded-md px-2 py-1.5 text-sm" />
-        <button type="submit" className="bg-gray-100 px-3 py-1.5 rounded-md text-sm">
-          Filter
-        </button>
+        <input type="date" name="from" defaultValue={from} style={{ width: 'auto' }} />
+        <input type="date" name="to" defaultValue={to} style={{ width: 'auto' }} />
+        <button type="submit" className="btn btn-secondary btn-sm">Filter</button>
       </form>
-      <div className="space-y-2">
-        {logs.map((log) => (
-          <details key={log.id} className="border rounded-lg">
-            <summary className="p-3 cursor-pointer flex items-center gap-3 text-sm">
-              <span
-                className={`px-2 py-0.5 rounded text-xs font-medium ${
-                  log.action === 'create'
-                    ? 'bg-green-100 text-green-700'
-                    : log.action === 'delete'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-blue-100 text-blue-700'
-                }`}
-              >
-                {log.action}
-              </span>
-              <span className="font-medium">{log.entityType}</span>
-              <span className="text-gray-500">{log.entityId}</span>
-              <span className="text-gray-400 ml-auto">{log.createdAt.toLocaleString()}</span>
-            </summary>
-            <div className="px-3 pb-3">
-              <pre className="bg-gray-50 rounded p-2 text-xs overflow-x-auto">
-                {JSON.stringify(log.changes, null, 2)}
-              </pre>
-            </div>
-          </details>
-        ))}
-        {logs.length === 0 && <p className="text-gray-500">No logs found.</p>}
+
+      <div className="card" style={{ borderRadius: '0 0 var(--radius) var(--radius)', borderTop: 'none' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.75rem' }}>
+          {logs.map((log) => (
+            <details key={log.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+              <summary style={{ padding: '0.75rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap', listStyle: 'none' }}>
+                <span className={actionClass(log.action)}>{log.action}</span>
+                <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.875rem' }}>{log.entityType}</span>
+                <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{log.entityId}</span>
+                <span className="badge badge-orange" style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>
+                  {log.userName ?? log.userEmail ?? 'System'}
+                </span>
+                <span style={{ marginLeft: 'auto', fontSize: '0.775rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  {log.createdAt.toLocaleString()}
+                </span>
+              </summary>
+              <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--border)' }}>
+                <pre style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '0.75rem', fontSize: '0.75rem', overflowX: 'auto', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+                  {JSON.stringify(log.changes, null, 2)}
+                </pre>
+              </div>
+            </details>
+          ))}
+          {logs.length === 0 && (
+            <div className="empty-state"><p>No audit logs found for these filters.</p></div>
+          )}
+        </div>
       </div>
     </div>
   );

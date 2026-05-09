@@ -1,136 +1,96 @@
 import { getDb, schema } from '@tayo/database';
 import Link from 'next/link';
 import { EyeIcon } from '@heroicons/react/24/outline';
+import { desc } from 'drizzle-orm';
 
 async function getOrders() {
   const db = getDb();
-
-  const orders = await db
-    .select()
-    .from(schema.orders)
-    .orderBy(schema.orders.createdAt);
-
-  return orders;
+  return db.select().from(schema.orders).orderBy(desc(schema.orders.createdAt));
 }
 
-const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  preparing: 'bg-purple-100 text-purple-800',
-  ready_for_pickup: 'bg-indigo-100 text-indigo-800',
-  out_for_delivery: 'bg-cyan-100 text-cyan-800',
-  delivered: 'bg-green-100 text-green-800',
-  completed: 'bg-slate-100 text-slate-800',
-  cancelled: 'bg-red-100 text-red-800',
-  refunded: 'bg-orange-100 text-orange-800',
-};
+function statusBadge(status: string) {
+  const map: Record<string, string> = {
+    pending: 'badge badge-warning',
+    confirmed: 'badge badge-blue',
+    preparing: 'badge badge-purple',
+    ready_for_pickup: 'badge badge-blue',
+    out_for_delivery: 'badge badge-blue',
+    delivered: 'badge badge-success',
+    completed: 'badge badge-neutral',
+    cancelled: 'badge badge-danger',
+    refunded: 'badge badge-orange',
+  };
+  return map[status] ?? 'badge badge-neutral';
+}
 
-const paymentStatusColors = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  processing: 'bg-blue-100 text-blue-800',
-  succeeded: 'bg-green-100 text-green-800',
-  failed: 'bg-red-100 text-red-800',
-  refunded: 'bg-orange-100 text-orange-800',
-};
+function paymentBadge(status: string) {
+  const map: Record<string, string> = {
+    pending: 'badge badge-warning',
+    processing: 'badge badge-blue',
+    succeeded: 'badge badge-success',
+    failed: 'badge badge-danger',
+    refunded: 'badge badge-orange',
+  };
+  return map[status] ?? 'badge badge-neutral';
+}
 
 export default async function OrdersPage() {
   const orders = await getOrders();
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(new Date(date));
-  };
+  const fmt = (d: Date) => new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  }).format(new Date(d));
 
   return (
     <div>
-      <div className="sm:flex sm:items-center sm:justify-between mb-8">
+      <div className="page-header">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Orders</h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Manage and track customer orders
-          </p>
+          <h1 className="page-title">Orders</h1>
+          <p className="page-subtitle">{orders.length} total orders</p>
         </div>
       </div>
 
-      <div className="bg-white shadow-sm ring-1 ring-slate-200 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
-            <tr>
-              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 sm:pl-6">
-                Order Number
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Customer
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Date
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Total
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Payment
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Status
-              </th>
-              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 bg-white">
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-slate-50">
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
-                  {order.orderNumber}
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                  <div>
-                    <div className="font-medium text-slate-900">{order.customerName}</div>
-                    <div className="text-slate-500">{order.customerEmail}</div>
-                  </div>
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                  {formatDate(order.createdAt)}
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-900">
-                  ${parseFloat(order.total).toFixed(2)}
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors] || 'bg-slate-100 text-slate-800'}`}>
-                    {order.paymentStatus}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[order.status as keyof typeof statusColors] || 'bg-slate-100 text-slate-800'}`}>
-                    {order.status.replace(/_/g, ' ')}
-                  </span>
-                </td>
-                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <Link
-                    href={`/orders/${order.id}`}
-                    className="inline-flex items-center gap-x-1 rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
-                  >
-                    <EyeIcon className="h-4 w-4" />
-                    View
-                  </Link>
-                </td>
+      <div className="table-wrap">
+        <div className="table-scroll">
+          <table style={{ minWidth: 860 }}>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {orders.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-sm text-slate-500">No orders found</p>
-          </div>
-        )}
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.id}>
+                  <td style={{ fontWeight: 700, color: 'var(--text)', fontFamily: 'monospace', fontSize: '0.8rem' }}>{order.orderNumber}</td>
+                  <td>
+                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.875rem' }}>{order.customerName}</div>
+                    <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)' }}>{order.customerEmail}</div>
+                  </td>
+                  <td style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>{fmt(order.createdAt)}</td>
+                  <td style={{ fontWeight: 700, color: 'var(--text)' }}>${parseFloat(order.total).toFixed(2)}</td>
+                  <td><span className={paymentBadge(order.paymentStatus)}>{order.paymentStatus}</span></td>
+                  <td><span className={statusBadge(order.status)}>{order.status.replace(/_/g, ' ')}</span></td>
+                  <td>
+                    <Link href={`/orders/${order.id}`} className="btn btn-secondary btn-sm">
+                      <EyeIcon style={{ width: 14, height: 14 }} />
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+              {orders.length === 0 && (
+                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>No orders yet</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

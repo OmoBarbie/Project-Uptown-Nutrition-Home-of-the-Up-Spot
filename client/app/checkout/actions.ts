@@ -10,7 +10,7 @@ import { clearCart, getCart } from '@/app/actions/cart'
 import { auth } from '@/lib/auth'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27.acacia',
+  apiVersion: '2025-12-15.clover',
 })
 
 export interface CheckoutState {
@@ -62,8 +62,8 @@ export async function createPaymentIntent(
       errors.name = ['Name is required']
     if (!email)
       errors.email = ['Email is required']
-    if (!street)
-      errors.address = ['Address is required']
+    // if (!street)
+    //   errors.address = ['Address is required']
 
     if (dbCartItems.length === 0) {
       return {
@@ -84,8 +84,11 @@ export async function createPaymentIntent(
 
     const discountRaw = Number.parseFloat((formData.get('discount') as string) ?? '0') || 0
     const tax = subtotal * 0.08
-    const deliveryFee = subtotal >= 50 ? 0 : 5
-    const total = Math.max(0, subtotal - discountRaw) + tax + deliveryFee
+    const deliveryFee = 0
+    const afterDiscount = Math.max(0, subtotal - discountRaw)
+    const baseTotal = afterDiscount + tax + deliveryFee
+    const stripeFee = Math.round((baseTotal * 0.029 + 0.30) * 100) / 100
+    const total = baseTotal + stripeFee
 
     // Serialize delivery address into deliveryInstructions — orders table has no address columns
     const deliveryAddress = JSON.stringify({ name, street, city, state, zipCode })

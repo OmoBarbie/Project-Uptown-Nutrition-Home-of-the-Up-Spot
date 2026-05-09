@@ -1,10 +1,20 @@
 import { CategoryForm } from '../category-form';
+import Link from 'next/link';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 export default function NewCategoryPage() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">New Category</h1>
-      <CategoryForm />
+    <div>
+      <div style={{ marginBottom: '2rem' }}>
+        <Link href="/categories" className="btn btn-ghost btn-sm" style={{ marginBottom: '1rem' }}>
+          <ChevronLeftIcon style={{ width: 14, height: 14 }} />
+          Back to Categories
+        </Link>
+        <h1 className="page-title">New Category</h1>
+      </div>
+      <div className="card-padded" style={{ maxWidth: 560 }}>
+        <CategoryForm />
+      </div>
     </div>
   );
 }

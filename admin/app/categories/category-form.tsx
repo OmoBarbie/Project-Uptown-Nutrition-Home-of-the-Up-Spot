@@ -26,10 +26,11 @@ export function CategoryForm({ category }: Props) {
     : createCategory;
 
   return (
-    <form action={action} className="space-y-4 max-w-lg">
-      <div>
-        <label className="block text-sm font-medium mb-1">Name</label>
+    <form action={action} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: 520 }}>
+      <div className="field">
+        <label htmlFor="cat-name">Name</label>
         <input
+          id="cat-name"
           name="name"
           required
           value={name}
@@ -37,32 +38,33 @@ export function CategoryForm({ category }: Props) {
             setName(e.target.value);
             if (!category) setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
           }}
-          className="w-full border rounded-md px-3 py-2"
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Slug</label>
-        <input name="slug" value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full border rounded-md px-3 py-2" />
+      <div className="field">
+        <label htmlFor="cat-slug">Slug</label>
+        <input id="cat-slug" name="slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
+      </div>
+      <div className="field">
+        <label htmlFor="cat-description">Description</label>
+        <textarea id="cat-description" name="description" defaultValue={category?.description ?? ''} rows={3} />
+      </div>
+      <div className="field">
+        <label htmlFor="cat-imageUrl">Image URL</label>
+        <input id="cat-imageUrl" name="imageUrl" type="url" defaultValue={category?.imageUrl ?? ''} />
+      </div>
+      <div className="field">
+        <label htmlFor="cat-sortOrder">Sort Order</label>
+        <input id="cat-sortOrder" name="sortOrder" type="number" defaultValue={category?.sortOrder ?? 0} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <input name="isActive" type="checkbox" id="isActive" defaultChecked={category?.isActive ?? true} style={{ width: 'auto' }} />
+        <label htmlFor="isActive" style={{ margin: 0 }}>Active</label>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Description</label>
-        <textarea name="description" defaultValue={category?.description ?? ''} rows={3} className="w-full border rounded-md px-3 py-2" />
+        <button type="submit" className="btn btn-primary">
+          {category ? 'Save Changes' : 'Create Category'}
+        </button>
       </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Image URL</label>
-        <input name="imageUrl" type="url" defaultValue={category?.imageUrl ?? ''} className="w-full border rounded-md px-3 py-2" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Sort Order</label>
-        <input name="sortOrder" type="number" defaultValue={category?.sortOrder ?? 0} className="w-full border rounded-md px-3 py-2" />
-      </div>
-      <div className="flex items-center gap-2">
-        <input name="isActive" type="checkbox" id="isActive" defaultChecked={category?.isActive ?? true} />
-        <label htmlFor="isActive" className="text-sm font-medium">Active</label>
-      </div>
-      <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded-md font-medium">
-        {category ? 'Save Changes' : 'Create Category'}
-      </button>
     </form>
   );
 }

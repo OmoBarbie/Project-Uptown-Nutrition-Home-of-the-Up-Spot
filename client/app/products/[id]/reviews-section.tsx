@@ -1,7 +1,8 @@
 import { getDb, schema } from '@tayo/database'
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
+import { HelpfulButton } from './helpful-button'
 import { GuestReviewPrompt, ReviewForm } from './review-modal'
 
 interface Props {
@@ -19,6 +20,18 @@ export async function ReviewsSection({ productId, ratings }: Props) {
     orderBy: [desc(schema.reviews.createdAt)],
     limit: 10,
   })
+
+  const votedReviewIds = new Set<string>()
+  if (session && reviews.length > 0) {
+    const votes = await db.query.reviewHelpful.findMany({
+      where: and(
+        eq(schema.reviewHelpful.userId, session.user.id),
+        inArray(schema.reviewHelpful.reviewId, reviews.map(r => r.id)),
+      ),
+      columns: { reviewId: true },
+    })
+    votes.forEach(v => votedReviewIds.add(v.reviewId))
+  }
 
   const avg = ratings ? ratings.averageRating : 0
   const total = ratings?.totalReviews ?? 0
@@ -78,11 +91,12 @@ export async function ReviewsSection({ productId, ratings }: Props) {
             </div>
             {r.title && <p className="font-semibold mb-1">{r.title}</p>}
             <p className="text-gray-700 text-sm">{r.comment}</p>
-            <p className="text-xs text-gray-400 mt-2">
-              {r.helpfulCount}
-              {' '}
-              found this helpful
-            </p>
+            <HelpfulButton
+              reviewId={r.id}
+              initialCount={r.helpfulCount}
+              initialVoted={votedReviewIds.has(r.id)}
+              isLoggedIn={!!session}
+            />
           </div>
         ))}
         {reviews.length === 0 && total === 0 && (

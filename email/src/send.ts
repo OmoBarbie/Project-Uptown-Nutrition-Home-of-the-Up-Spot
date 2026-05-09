@@ -4,12 +4,13 @@ import { VerifyEmailTemplate } from './templates/verify-email';
 import { ResetPasswordTemplate } from './templates/reset-password';
 import { OrderStatusUpdateEmail } from './templates/order-status-update';
 import { RefundNotificationEmail } from './templates/refund-notification';
+import { NewsletterWelcomeEmail } from './templates/newsletter-welcome';
 
 export async function sendVerifyEmail(to: string, url: string) {
   return getResend().emails.send({
     from: FROM,
     to,
-    subject: 'Verify your Tayo account',
+    subject: 'Verify your UptownNutrition account',
     react: VerifyEmailTemplate({ url }),
   });
 }
@@ -55,5 +56,14 @@ export async function sendRefundNotification(to: string, orderNumber: string, am
     to,
     subject: `Refund processed for order #${orderNumber}`,
     react: RefundNotificationEmail({ orderNumber, amount, reason }),
+  });
+}
+
+export async function sendNewsletterWelcome(to: string, unsubscribeUrl: string) {
+  return getResend().emails.send({
+    from: FROM,
+    to,
+    subject: 'Welcome to the Uptown Nutrition community!',
+    react: NewsletterWelcomeEmail({ unsubscribeUrl }),
   });
 }

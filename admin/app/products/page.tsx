@@ -1,17 +1,27 @@
 import { getDb, schema } from '@tayo/database';
+import { eq } from 'drizzle-orm';
 import Link from 'next/link';
-import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DeleteProductButton } from './delete-button';
 
 async function getProducts() {
   const db = getDb();
-
-  const products = await db
-    .select()
+  return db
+    .select({
+      id: schema.products.id,
+      name: schema.products.name,
+      description: schema.products.description,
+      price: schema.products.price,
+      imageUrl: schema.products.imageUrl,
+      emoji: schema.products.emoji,
+      stockQuantity: schema.products.stockQuantity,
+      isActive: schema.products.isActive,
+      isFeatured: schema.products.isFeatured,
+      categoryName: schema.categories.name,
+    })
     .from(schema.products)
+    .leftJoin(schema.categories, eq(schema.products.categoryId, schema.categories.id))
     .orderBy(schema.products.createdAt);
-
-  return products;
 }
 
 export default async function ProductsPage() {
@@ -19,113 +29,88 @@ export default async function ProductsPage() {
 
   return (
     <div>
-      <div className="sm:flex sm:items-center sm:justify-between mb-8">
+      <div className="page-header">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Products</h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Manage your product inventory
-          </p>
+          <h1 className="page-title">Products</h1>
+          <p className="page-subtitle">{products.length} products in inventory</p>
         </div>
-        <div className="mt-4 sm:mt-0">
-          <Link
-            href="/products/new"
-            className="inline-flex items-center gap-x-2 rounded-md bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-          >
-            <PlusIcon className="h-5 w-5" aria-hidden="true" />
-            Add Product
-          </Link>
-        </div>
+        <Link href="/products/new" className="btn btn-primary">
+          <PlusIcon style={{ width: 16, height: 16 }} />
+          Add Product
+        </Link>
       </div>
 
-      <div className="bg-white shadow-sm ring-1 ring-slate-200 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
-            <tr>
-              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 sm:pl-6">
-                Product
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Category
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Price
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Stock
-              </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
-                Status
-              </th>
-              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 bg-white">
-            {products.map((product) => (
-              <tr key={product.id} className="hover:bg-slate-50">
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 sm:pl-6">
-                  <div className="flex items-center">
-                    <div className="h-12 w-12 flex-shrink-0 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center text-2xl">
-                      {product.emoji}
-                    </div>
-                    <div className="ml-4">
-                      <div className="font-medium text-slate-900">{product.name}</div>
-                      <div className="text-slate-500 text-sm line-clamp-1">{product.description}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800">
-                    {product.category}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-900">
-                  ${parseFloat(product.price).toFixed(2)}
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                  {product.stock}
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm">
-                  {product.stock > 0 ? (
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                      In Stock
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
-                      Out of Stock
-                    </span>
-                  )}
-                </td>
-                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <div className="flex items-center justify-end gap-x-2">
-                    <Link
-                      href={`/products/${product.id}/edit`}
-                      className="inline-flex items-center gap-x-1 rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                      Edit
-                    </Link>
-                    <DeleteProductButton productId={product.id} productName={product.name} />
-                  </div>
-                </td>
+      <div className="table-wrap">
+        <div className="table-scroll">
+          <table style={{ minWidth: 940 }}>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th style={{ minWidth: 160 }}></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {products.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-sm text-slate-500">No products found</p>
-            <Link
-              href="/products/new"
-              className="mt-4 inline-flex items-center gap-x-2 rounded-md bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
-            >
-              <PlusIcon className="h-5 w-5" />
-              Add Your First Product
-            </Link>
-          </div>
-        )}
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: 8, flexShrink: 0,
+                        overflow: 'hidden',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1.25rem',
+                      }}>
+                        {product.imageUrl ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : product.emoji}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.875rem' }}>{product.name}</div>
+                        <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 260 }}>{product.description}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="badge badge-neutral">{product.categoryName ?? '—'}</span>
+                  </td>
+                  <td style={{ fontWeight: 700, color: 'var(--text)' }}>${parseFloat(product.price).toFixed(2)}</td>
+                  <td style={{ color: product.stockQuantity > 0 ? 'var(--text)' : 'var(--danger)', fontWeight: 600 }}>
+                    {product.stockQuantity}
+                  </td>
+                  <td>
+                    {product.stockQuantity > 0
+                      ? <span className="badge badge-success">In Stock</span>
+                      : <span className="badge badge-danger">Out of Stock</span>}
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                      <Link href={`/products/${product.id}/edit`} className="btn btn-secondary btn-sm">
+                        <PencilIcon style={{ width: 14, height: 14 }} />
+                        Edit
+                      </Link>
+                      <DeleteProductButton productId={product.id} productName={product.name} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {products.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                    No products yet.
+                    <Link href="/products/new" className="btn btn-primary btn-sm" style={{ marginLeft: '0.75rem' }}>Add your first product</Link>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

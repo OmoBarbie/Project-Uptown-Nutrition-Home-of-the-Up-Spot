@@ -1,18 +1,19 @@
 import { getDb, schema } from '@tayo/database';
+import { and, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 
 type AuditAction = 'create' | 'update' | 'delete';
-type EntityType = 'product' | 'order' | 'user' | 'category';
+type EntityType = 'product' | 'order' | 'user' | 'category' | 'review';
 
 interface AuditLogData {
   action: AuditAction;
   entityType: EntityType;
   entityId: string;
   changes?: {
-    before?: any;
-    after?: any;
+    before?: unknown;
+    after?: unknown;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export async function createAuditLog(
@@ -56,12 +57,10 @@ export async function getEntityAuditLogs(
     const logs = await db
       .select()
       .from(schema.auditLogs)
-      .where(
-        db.$with(schema.auditLogs).where({
-          entityType,
-          entityId,
-        })
-      )
+      .where(and(
+        eq(schema.auditLogs.entityType, entityType),
+        eq(schema.auditLogs.entityId, entityId),
+      ))
       .orderBy(schema.auditLogs.createdAt);
 
     return logs;

@@ -15,7 +15,7 @@ export function DeleteProductButton({ productId, productName }: { productId: str
     setIsDeleting(true);
     try {
       await deleteProduct(productId);
-    } catch (error) {
+    } catch {
       alert('Failed to delete product');
       setIsDeleting(false);
     }
@@ -25,10 +25,10 @@ export function DeleteProductButton({ productId, productName }: { productId: str
     <button
       onClick={handleDelete}
       disabled={isDeleting}
-      className="inline-flex items-center gap-x-1 rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-red-50 disabled:opacity-50"
+      className="btn btn-danger btn-sm"
     >
-      <TrashIcon className="h-4 w-4" />
-      {isDeleting ? 'Deleting...' : 'Delete'}
+      <TrashIcon style={{ width: 14, height: 14 }} />
+      {isDeleting ? 'Deleting…' : 'Delete'}
     </button>
   );
 }

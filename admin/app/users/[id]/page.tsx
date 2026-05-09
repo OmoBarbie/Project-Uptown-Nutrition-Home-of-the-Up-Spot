@@ -2,11 +2,12 @@ import { notFound } from 'next/navigation';
 import { getDb, schema } from '@tayo/database';
 import { eq } from 'drizzle-orm';
 import { updateUserRole, toggleBan } from '../actions';
+import Link from 'next/link';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const db = getDb();
-
   const user = await db.query.users.findFirst({ where: eq(schema.users.id, id) });
   if (!user) notFound();
 
@@ -17,61 +18,71 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   });
 
   return (
-    <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-2">{user.name}</h1>
-      <p className="text-gray-500 mb-6">{user.email}</p>
+    <div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <Link href="/users" className="btn btn-ghost btn-sm" style={{ marginBottom: '1rem' }}>
+          <ChevronLeftIcon style={{ width: 14, height: 14 }} />
+          Back to Users
+        </Link>
+        <h1 className="page-title">{user.name}</h1>
+        <p className="page-subtitle">{user.email}</p>
+      </div>
 
-      <div className="grid grid-cols-2 gap-6 mb-8">
-        <div className="border rounded-lg p-4">
-          <p className="text-sm font-medium mb-2">Role</p>
-          <form action={updateUserRole.bind(null, user.id)} className="flex gap-2 items-center">
-            <select name="role" defaultValue={user.role ?? 'customer'} className="border rounded-md px-2 py-1 text-sm">
-              <option value="customer">Customer</option>
-              <option value="admin">Admin</option>
-              <option value="super_admin">Super Admin</option>
-            </select>
-            <button type="submit" className="text-sm px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              Update
-            </button>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div className="card-padded">
+          <p className="section-title">Role</p>
+          <form action={updateUserRole.bind(null, user.id)} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+              <select name="role" defaultValue={user.role ?? 'customer'}>
+                <option value="customer">Customer</option>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
+            </div>
+            <button type="submit" className="btn btn-primary btn-sm" style={{ flexShrink: 0 }}>Update</button>
           </form>
         </div>
-        <div className="border rounded-lg p-4">
-          <p className="text-sm font-medium mb-2">Account Status</p>
-          <form action={toggleBan.bind(null, user.id, !user.isBanned)}>
-            <button
-              type="submit"
-              className={`text-sm px-3 py-1 rounded-md ${user.isBanned ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
-            >
-              {user.isBanned ? 'Unban User' : 'Ban User'}
-            </button>
-          </form>
+        <div className="card-padded">
+          <p className="section-title">Account Status</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span className={`badge ${user.isBanned ? 'badge-danger' : 'badge-success'}`} style={{ fontSize: '0.8rem', padding: '0.3rem 0.75rem' }}>
+              {user.isBanned ? 'Banned' : 'Active'}
+            </span>
+            <form action={toggleBan.bind(null, user.id, !user.isBanned)}>
+              <button type="submit" className={`btn btn-sm ${user.isBanned ? 'btn-success' : 'btn-danger'}`}>
+                {user.isBanned ? 'Unban User' : 'Ban User'}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
-      <h2 className="text-lg font-semibold mb-3">Recent Orders</h2>
+      <p className="section-title">Recent Orders</p>
       {orders.length === 0 ? (
-        <p className="text-gray-500 text-sm">No orders yet.</p>
+        <div className="card-padded empty-state">No orders yet.</div>
       ) : (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left">
-              <th className="pb-2">Order #</th>
-              <th className="pb-2">Total</th>
-              <th className="pb-2">Status</th>
-              <th className="pb-2">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((o) => (
-              <tr key={o.id} className="border-b">
-                <td className="py-2">{o.orderNumber}</td>
-                <td className="py-2">${o.total}</td>
-                <td className="py-2">{o.status}</td>
-                <td className="py-2 text-gray-500">{o.createdAt.toLocaleDateString()}</td>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map((o) => (
+                <tr key={o.id}>
+                  <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)' }}>{o.orderNumber}</td>
+                  <td style={{ fontWeight: 700, color: 'var(--text)' }}>${o.total}</td>
+                  <td><span className="badge badge-neutral">{o.status.replace(/_/g,' ')}</span></td>
+                  <td style={{ fontSize: '0.8rem' }}>{o.createdAt.toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

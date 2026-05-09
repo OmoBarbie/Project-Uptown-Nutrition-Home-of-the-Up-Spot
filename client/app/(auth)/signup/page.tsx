@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { SignUpForm } from '@/app/components/AuthForms'
 
-export default function SignUpPage() {
+export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
+  const { callbackUrl } = await searchParams
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -27,7 +28,7 @@ export default function SignUpPage() {
         </div>
 
         <div className="mt-8 bg-white border border-sand py-6 px-5 sm:py-8 sm:px-10">
-          <SignUpForm />
+          <SignUpForm callbackUrl={callbackUrl} />
         </div>
 
         <div className="text-center">

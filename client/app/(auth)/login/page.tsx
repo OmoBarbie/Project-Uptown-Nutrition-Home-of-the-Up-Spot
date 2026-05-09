@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { SignInForm } from '@/app/components/AuthForms'
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
+  const { callbackUrl } = await searchParams
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -18,7 +19,7 @@ export default function LoginPage() {
             Or
             {' '}
             <Link
-              href="/signup"
+              href={callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/signup'}
               className="font-medium text-forest-600 hover:text-forest-500"
             >
               create a new account
@@ -27,7 +28,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-8 bg-white border border-sand py-6 px-5 sm:py-8 sm:px-10">
-          <SignInForm />
+          <SignInForm callbackUrl={callbackUrl} />
           <p className="text-sm text-center mt-3">
             <a href="/forgot-password" className="text-forest-600 hover:text-forest-500 underline">Forgot password?</a>
           </p>

@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import type { FeaturedCategory } from '@/components/Products'
+import { getDb, schema } from '@tayo/database'
+import { desc, eq } from 'drizzle-orm'
 import { Features } from '@/components/Features'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
@@ -65,7 +68,67 @@ const localBusinessJsonLd = {
   ],
 }
 
-export default function Home() {
+function buildFeatures(product: {
+  calories: number | null
+  protein: number | null
+  carbs: number | null
+  fiber: number | null
+  sugar: number | null
+}): string[] {
+  const features: string[] = []
+  if (product.calories)
+    features.push(`${product.calories} Cal`)
+  if (product.protein)
+    features.push(`${product.protein}g Protein`)
+  if (product.carbs)
+    features.push(`${product.carbs}g Carbs`)
+  if (product.fiber)
+    features.push(`${product.fiber}g Fiber`)
+  if (product.sugar)
+    features.push(`${product.sugar}g Sugar`)
+  return features
+}
+
+export default async function Home() {
+  const db = getDb()
+
+  const featuredProducts = await db.query.products.findMany({
+    where: eq(schema.products.isActive, true),
+    with: { category: true },
+    orderBy: [desc(schema.products.isFeatured), desc(schema.products.createdAt)],
+    limit: 16,
+  })
+
+  // Group by category, max 4 categories, 2 products each
+  const categoryMap = new Map<string, FeaturedCategory>()
+  for (const product of featuredProducts) {
+    const catId = product.category.id
+    if (!categoryMap.has(catId)) {
+      categoryMap.set(catId, {
+        category: product.category.name,
+        categorySlug: product.category.slug,
+        description: product.category.description ?? '',
+        items: [],
+      })
+    }
+    const group = categoryMap.get(catId)!
+    if (group.items.length < 2) {
+      group.items.push({
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        price: `$${Number(product.price).toFixed(0)}`,
+        emoji: product.emoji ?? '🥗',
+        stockQuantity: product.stockQuantity,
+        features: buildFeatures(product),
+      })
+    }
+    if (categoryMap.size >= 4 && group.items.length >= 2)
+      continue
+  }
+
+  const categories = Array.from(categoryMap.values()).filter(c => c.items.length > 0).slice(0, 4)
+
   return (
     <>
       <script
@@ -75,7 +138,7 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <Products />
+        <Products categories={categories} />
         <Features />
         <Testimonials />
       </main>

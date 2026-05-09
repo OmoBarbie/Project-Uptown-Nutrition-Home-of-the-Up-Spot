@@ -2,6 +2,7 @@
 
 import { StarIcon } from '@heroicons/react/20/solid'
 import { isTruthy } from '@setemiojo/utils'
+import Link from 'next/link'
 import { useCart } from '@/app/context/CartContext'
 
 interface ProductVariant {
@@ -44,62 +45,54 @@ function classNames(...classes: (string | boolean | undefined)[]) {
   return classes.filter(isTruthy).join(' ')
 }
 
-export function ProductsList({ products, categories }: ProductsListProps) {
+export function ProductsList({ products, categories: _categories }: ProductsListProps) {
   const { addItem } = useCart()
-  const allCategories = ['All', ...categories.map(c => c.name)]
 
   return (
     <>
       {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
-          Our Full Menu
+      <div className="mb-12">
+        <div className="flex items-center gap-3 mb-5">
+          <span className="h-px w-8 bg-terracotta-500" />
+          <span className="text-xs font-semibold tracking-[0.22em] uppercase text-terracotta-500">Our menu</span>
+        </div>
+        <h1 className="font-display text-5xl sm:text-7xl font-medium text-charcoal leading-[0.92]">
+          Full Menu
         </h1>
-        <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
-          Browse our complete selection of nutritious smoothies, protein-packed treats, and energizing refreshers
+        <p className="mt-4 text-base text-foreground/60 max-w-xl">
+          Browse our complete selection of nutritious smoothies, protein-packed treats, and energising refreshers.
         </p>
-      </div>
-
-      {/* Category Filter */}
-      <div className="mb-12 flex flex-wrap justify-center gap-3">
-        {allCategories.map(category => (
-          <button
-            key={category}
-            className="rounded-full px-6 py-2 text-sm font-semibold transition-colors bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400"
-          >
-            {category}
-          </button>
-        ))}
       </div>
 
       {/* Products Grid */}
       <div className="mx-auto max-w-7xl overflow-hidden">
         <h2 className="sr-only">Products</h2>
 
-        <div className="-mx-px grid grid-cols-2 auto-rows-auto border-l border-slate-200 dark:border-slate-700 sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
+        <div className="-mx-px grid grid-cols-2 border-l border-sand sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
           {products.map(product => (
             <article
               key={product.id}
-              className="group relative border-r border-b border-slate-200 dark:border-slate-700 p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors grid [grid-template-rows:subgrid] [grid-row:span_10]"
+              className="group relative border-r border-b border-sand p-4 sm:p-6 hover:bg-cream-50 transition-colors grid [grid-template-rows:subgrid] [grid-row:span_10]"
               style={{
                 display: 'grid',
                 gridTemplateRows: 'subgrid',
                 gridRow: 'span 10',
               }}
             >
+              <Link href={`/products/${product.id}`} className="absolute inset-0 z-0" aria-label={`View ${product.name}`} />
               {/* Product Image/Emoji */}
-              <div className="aspect-square rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform">
+              <div className="aspect-square bg-sand/30 flex items-center justify-center text-6xl">
                 {product.emoji}
               </div>
 
               {/* Product Name */}
-              <h3 className="mt-6 text-sm font-medium text-slate-900 dark:text-white text-center">
+              <h3 className="mt-4 text-sm font-medium text-charcoal text-center">
                 {product.name}
               </h3>
 
               {/* Category Badge */}
-              <div className="mt-2 text-center">
-                <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+              <div className="mt-1 text-center">
+                <span className="text-xs font-medium text-charcoal/60 uppercase tracking-wide">
                   {product.category}
                 </span>
               </div>
@@ -107,7 +100,7 @@ export function ProductsList({ products, categories }: ProductsListProps) {
               {/* Variants Badge */}
               <div className="mt-2 text-center min-h-[1.5rem]">
                 {product.variants.length > 0 && (
-                  <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                  <span className="text-xs text-charcoal/50 text-center">
                     {product.variants.length}
                     {' '}
                     {product.variants[0].type}
@@ -117,7 +110,7 @@ export function ProductsList({ products, categories }: ProductsListProps) {
               </div>
 
               {/* Description */}
-              <p className="mt-2 text-xs text-slate-600 dark:text-slate-400 text-center">
+              <p className="mt-2 text-xs text-charcoal/60 text-center">
                 {product.description}
               </p>
 
@@ -134,7 +127,7 @@ export function ProductsList({ products, categories }: ProductsListProps) {
                       key={rating}
                       aria-hidden="true"
                       className={classNames(
-                        product.rating.average > rating ? 'text-yellow-400' : 'text-slate-200 dark:text-slate-700',
+                        product.rating.average > rating ? 'text-yellow-400' : 'text-sand',
                         'size-5 shrink-0',
                       )}
                     />
@@ -143,14 +136,14 @@ export function ProductsList({ products, categories }: ProductsListProps) {
               </div>
 
               {/* Review Count */}
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 text-center">
+              <p className="mt-1 text-sm text-charcoal/50 text-center">
                 {product.rating.count}
                 {' '}
                 reviews
               </p>
 
               {/* Price */}
-              <p className="mt-4 text-base font-medium text-slate-900 dark:text-white text-center">
+              <p className="mt-3 font-display text-lg text-charcoal text-center">
                 $
                 {product.price}
               </p>
@@ -163,7 +156,7 @@ export function ProductsList({ products, categories }: ProductsListProps) {
                   e.stopPropagation()
                   addItem(product.id)
                 }}
-                className="relative z-10 mt-4 w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition-colors"
+                className="relative z-10 mt-4 w-full bg-forest-600 px-4 py-2.5 text-sm font-medium text-cream hover:bg-forest-700 transition-colors"
               >
                 Add to Cart
               </button>
@@ -172,16 +165,10 @@ export function ProductsList({ products, categories }: ProductsListProps) {
         </div>
       </div>
 
-      {/* Additional Info */}
-      <div className="mt-16 text-center">
-        <div className="inline-flex flex-col items-center rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 px-8 py-6">
-          <p className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-            Over 30 Smoothie Flavors Available!
-          </p>
-          <p className="text-slate-600 dark:text-slate-300">
-            Visit us in store to see our complete menu and daily specials
-          </p>
-        </div>
+      {/* Bottom Banner */}
+      <div className="mt-16 border border-sand p-8 text-center">
+        <p className="font-display text-2xl text-charcoal">Over 30 Smoothie Flavors</p>
+        <p className="mt-2 text-sm text-charcoal/60">Visit us in store to see our complete menu and daily specials</p>
       </div>
     </>
   )

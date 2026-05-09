@@ -31,15 +31,15 @@ export function CouponInput({ subtotal, onApply }: Props) {
 
   if (applied) {
     return (
-      <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-md px-3 py-2 text-sm">
-        <span className="text-green-700">{applied}</span>
+      <div className="flex items-center justify-between border border-forest-200 bg-forest-50 px-3 py-2.5 text-sm">
+        <span className="text-forest-700 font-medium">{applied}</span>
         <button
           type="button"
           onClick={() => {
             setApplied('')
             onApply(0, '')
           }}
-          className="text-gray-400 hover:text-gray-600"
+          className="text-foreground/40 hover:text-charcoal transition-colors"
         >
           ✕
         </button>
@@ -48,24 +48,25 @@ export function CouponInput({ subtotal, onApply }: Props) {
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <div className="flex gap-2">
         <input
           value={code}
           onChange={e => setCode(e.target.value.toUpperCase())}
-          placeholder="Coupon code"
-          className="flex-1 border rounded-md px-3 py-2 text-sm uppercase"
+          onKeyDown={e => e.key === 'Enter' && handleApply()}
+          placeholder="COUPON CODE"
+          className="flex-1 border border-sand bg-background text-charcoal px-3 py-2.5 text-sm uppercase placeholder:text-foreground/30 placeholder:normal-case focus:outline-none focus:border-forest-600 transition-colors"
         />
         <button
           type="button"
           onClick={handleApply}
           disabled={isPending}
-          className="bg-gray-100 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-200 disabled:opacity-50"
+          className="border border-sand bg-card text-charcoal px-4 py-2.5 text-sm font-semibold hover:bg-sand transition-colors disabled:opacity-50"
         >
           {isPending ? '…' : 'Apply'}
         </button>
       </div>
-      {error && <p className="text-red-600 text-xs">{error}</p>}
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   )
 }

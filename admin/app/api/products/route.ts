@@ -6,7 +6,7 @@ import { getDb, schema } from '@tayo/database';
 import { eq, desc } from 'drizzle-orm';
 
 // GET all products (admin view - includes inactive)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const db = getDb();
 

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useActionState } from 'react';
+import type { Route } from 'next';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from '@/lib/auth-client';
+import { Squares2X2Icon } from '@heroicons/react/24/outline';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,107 +22,123 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      console.log('[admin sign-in] attempting with email:', email);
       const result = await signIn.email({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
       if (result.error) {
+        console.error('[admin sign-in] API error:', result.error);
         setError(result.error.message || 'Invalid email or password');
         setIsLoading(false);
         return;
       }
 
-      // Check if user has admin role
+      console.log('[admin sign-in] success, data:', result.data);
+
+      // Check if user has admin or super_admin role
       if (result.data?.user) {
         const user = result.data.user as { role?: string };
-        if (user.role !== 'admin') {
+        if (user.role !== 'admin' && user.role !== 'super_admin') {
           setError('Unauthorized. Admin access required.');
           setIsLoading(false);
           return;
         }
       }
 
-      // Redirect to original page or dashboard
-      router.push(redirect);
+      router.push(redirect as Route);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+    } catch (err: unknown) {
+      console.error('[admin sign-in] unexpected exception:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-slate-900">
-            <span className="text-emerald-600">Uptown</span>{' '}
-            <span className="text-orange-500">Nutrition</span>
-          </h2>
-          <p className="mt-2 text-center text-sm text-slate-600">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--bg)',
+      padding: '1rem',
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: 400,
+        background: 'var(--card)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '2.5rem 2rem',
+        boxShadow: 'var(--shadow-lg)',
+      }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 12,
+            background: 'var(--orange)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginBottom: '0.875rem',
+          }}>
+            <Squares2X2Icon style={{ width: 26, height: 26, color: '#fff' }} />
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-bricolage, system-ui)', fontSize: '1.375rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.025em', margin: 0, lineHeight: 1.2 }}>
+            Uptown Nutrition
+          </h1>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.375rem', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>
             Admin Dashboard
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
+            <div style={{ background: 'var(--danger-dim)', border: '1px solid var(--danger)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
+              <p style={{ color: 'var(--danger)', fontSize: '0.875rem', margin: 0 }}>{error}</p>
             </div>
           )}
 
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm"
-                placeholder="admin@example.com"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border-0 py-2 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm"
-                placeholder="••••••••"
-              />
-            </div>
+          <div className="field">
+            <label htmlFor="email">Email address</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@example.com"
+            />
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
+          <div className="field">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
           </div>
 
-          <div className="text-center">
-            <p className="text-xs text-slate-500">
-              Authorized personnel only
-            </p>
-          </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn btn-primary btn-lg"
+            style={{ width: '100%', marginTop: '0.5rem' }}
+          >
+            {isLoading ? 'Signing in…' : 'Sign in'}
+          </button>
+
+          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+            Authorized personnel only
+          </p>
         </form>
       </div>
     </div>
