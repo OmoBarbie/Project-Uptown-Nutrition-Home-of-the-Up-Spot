@@ -1,5 +1,6 @@
 'use client';
 
+import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -11,6 +12,8 @@ import {
   StarIcon,
   ClipboardDocumentListIcon,
   TicketIcon,
+  CreditCardIcon,
+  EnvelopeIcon,
   ArrowRightOnRectangleIcon,
   EllipsisHorizontalIcon,
   XMarkIcon,
@@ -18,6 +21,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import { useSession, signOut } from '@/lib/auth-client';
+import { ThemeToggle } from './theme-toggle';
 
 const allNavigation = [
   { name: 'Dashboard', href: '/', icon: ChartBarIcon },
@@ -28,9 +32,10 @@ const allNavigation = [
   { name: 'Users', href: '/users', icon: UsersIcon },
   { name: 'Coupons', href: '/coupons', icon: TicketIcon },
   { name: 'Audit Logs', href: '/audit-logs', icon: ClipboardDocumentListIcon },
+  { name: 'Transactions', href: '/transactions', icon: CreditCardIcon },
+  { name: 'Newsletter', href: '/newsletter', icon: EnvelopeIcon },
 ];
 
-// Bottom bar: top 4 routes + overflow sheet
 const bottomPrimary = allNavigation.slice(0, 4);
 const bottomOverflow = allNavigation.slice(4);
 
@@ -53,10 +58,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  // Don't render layout on login page
-  if (pathname === '/login') {
-    return <>{children}</>;
-  }
+  if (pathname === '/login') return <>{children}</>;
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -65,7 +67,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <aside
         className="hidden lg:flex"
         style={{
-          position: 'fixed', top: 0, left: 0, bottom: 0, width: '220px',
+          position: 'fixed', top: 0, left: 0, bottom: 0, width: '224px',
           flexDirection: 'column',
           background: 'var(--surface)',
           borderRight: '1px solid var(--border)',
@@ -95,7 +97,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, overflowY: 'auto', padding: '0.75rem 0.75rem' }}>
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
           <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', padding: '0 0.5rem', marginBottom: '0.5rem' }}>
             Navigation
           </div>
@@ -104,22 +106,23 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             return (
               <Link
                 key={item.name}
-                href={item.href}
+                href={item.href as Route}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '0.625rem',
-                  padding: '0.6rem 0.625rem',
-                  borderRadius: 8,
-                  marginBottom: '0.125rem',
+                  padding: '0.575rem 0.625rem',
+                  borderRadius: 0,
+                  marginBottom: '0.1rem',
                   fontSize: '0.875rem', fontWeight: active ? 600 : 500,
                   color: active ? 'var(--orange)' : 'var(--text-secondary)',
                   background: active ? 'var(--orange-dim)' : 'transparent',
                   textDecoration: 'none',
                   transition: 'all 0.12s',
+                  borderLeft: active ? '2px solid var(--orange)' : '2px solid transparent',
                 }}
                 onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'var(--card)'; (e.currentTarget as HTMLElement).style.color = 'var(--text)'; } }}
                 onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; } }}
               >
-                <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                <item.icon style={{ width: 17, height: 17, flexShrink: 0 }} />
                 {item.name}
               </Link>
             );
@@ -128,14 +131,14 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
         {/* User footer */}
         {session?.user && (
-          <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem', borderRadius: 8, background: 'var(--card)' }}>
+          <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.625rem', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border)' }}>
               <div style={{
-                width: 30, height: 30, borderRadius: '50%',
+                width: 28, height: 28, borderRadius: '50%',
                 background: 'var(--orange-dim)',
                 border: '1.5px solid var(--orange)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '0.75rem', fontWeight: 700, color: 'var(--orange)',
+                fontSize: '0.7rem', fontWeight: 700, color: 'var(--orange)',
                 flexShrink: 0,
               }}>
                 {session.user.email?.[0]?.toUpperCase()}
@@ -148,16 +151,24 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                   {session.user.email}
                 </div>
               </div>
-              <button
-                onClick={handleLogout}
-                title="Sign out"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)', borderRadius: 4, flexShrink: 0 }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--danger)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-              >
-                <ArrowRightOnRectangleIcon style={{ width: 16, height: 16 }} />
-              </button>
+              <ThemeToggle />
             </div>
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                width: '100%', padding: '0.5rem 0.625rem',
+                background: 'none', border: '1px solid var(--border)',
+                cursor: 'pointer', color: 'var(--text-secondary)',
+                fontSize: '0.8rem', fontWeight: 500,
+                transition: 'all 0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--danger-dim, #fee2e2)'; e.currentTarget.style.color = 'var(--danger)'; e.currentTarget.style.borderColor = 'var(--danger)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+            >
+              <ArrowRightOnRectangleIcon style={{ width: 15, height: 15 }} />
+              Sign out
+            </button>
           </div>
         )}
       </aside>
@@ -182,43 +193,52 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             {currentPage?.name ?? 'Admin'}
           </span>
         </div>
-        {session?.user && (
-          <div style={{
-            width: 30, height: 30, borderRadius: '50%',
-            background: 'var(--orange-dim)',
-            border: '1.5px solid var(--orange)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '0.8rem', fontWeight: 700, color: 'var(--orange)',
-          }}>
-            {session.user.email?.[0]?.toUpperCase()}
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <ThemeToggle />
+          {session?.user && (
+            <>
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'var(--orange-dim)',
+                border: '1.5px solid var(--orange)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.75rem', fontWeight: 700, color: 'var(--orange)',
+              }}>
+                {session.user.email?.[0]?.toUpperCase()}
+              </div>
+              <button
+                onClick={handleLogout}
+                title="Sign out"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--danger)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+              >
+                <ArrowRightOnRectangleIcon style={{ width: 18, height: 18 }} />
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
       {/* ── MAIN CONTENT ────────────────────────────────────── */}
-      <main
-        style={{
-          paddingLeft: 0,
-          paddingBottom: '5rem', // space for bottom nav on mobile
-        }}
-        className="lg:pl-[220px] lg:pb-0"
-      >
-        <div style={{ padding: '1.25rem 1rem', maxWidth: 1200, margin: '0 auto' }} className="sm:px-6 lg:px-8 lg:py-8">
+      <main className="lg:pl-[224px]">
+        <div
+          style={{ maxWidth: 1280, margin: '0 auto' }}
+          className="px-4 pt-6 pb-40 sm:px-6 lg:px-8 lg:py-8 lg:pb-10"
+        >
           {children}
         </div>
       </main>
 
       {/* ── MOBILE BOTTOM NAV ───────────────────────────────── */}
       <nav
-        className="lg:hidden pb-safe"
+        className="grid lg:hidden pb-safe"
         style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
           background: 'var(--surface)',
           borderTop: '1px solid var(--border)',
-          display: 'grid',
           gridTemplateColumns: 'repeat(5, 1fr)',
           paddingTop: '0.5rem',
-          paddingBottom: '0.75rem',
         }}
       >
         {bottomPrimary.map((item) => {
@@ -226,24 +246,24 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           return (
             <Link
               key={item.name}
-              href={item.href}
+              href={item.href as Route}
               style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem',
                 padding: '0.25rem 0',
                 color: active ? 'var(--orange)' : 'var(--text-muted)',
                 textDecoration: 'none',
                 minHeight: 48,
                 justifyContent: 'center',
+                position: 'relative',
               }}
             >
-              <item.icon style={{ width: 22, height: 22 }} />
-              <span style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.03em' }}>{item.name}</span>
+              <item.icon style={{ width: 21, height: 21 }} />
+              <span style={{ fontSize: '0.58rem', fontWeight: 600, letterSpacing: '0.03em' }}>{item.name}</span>
               {active && (
                 <span style={{
-                  position: 'absolute',
-                  width: 4, height: 4, borderRadius: '50%',
+                  position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                  width: 20, height: 2, borderRadius: 1,
                   background: 'var(--orange)',
-                  bottom: '0.4rem',
                 }} />
               )}
             </Link>
@@ -254,25 +274,22 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => setMoreOpen(true)}
           style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem',
             padding: '0.25rem 0', background: 'none', border: 'none', cursor: 'pointer',
             color: moreOpen ? 'var(--orange)' : 'var(--text-muted)',
             minHeight: 48,
             justifyContent: 'center',
           }}
         >
-          <EllipsisHorizontalIcon style={{ width: 22, height: 22 }} />
-          <span style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.03em' }}>More</span>
+          <EllipsisHorizontalIcon style={{ width: 21, height: 21 }} />
+          <span style={{ fontSize: '0.58rem', fontWeight: 600, letterSpacing: '0.03em' }}>More</span>
         </button>
       </nav>
 
-      {/* ── MORE SHEET (mobile overflow nav) ────────────────── */}
+      {/* ── MORE SHEET ──────────────────────────────────────── */}
       {moreOpen && (
         <>
-          <div
-            onClick={() => setMoreOpen(false)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 60 }}
-          />
+          <div onClick={() => setMoreOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 60 }} />
           <div
             className="lg:hidden"
             style={{
@@ -283,12 +300,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               padding: '0 0 1.5rem',
             }}
           >
-            {/* Handle */}
             <div style={{ display: 'flex', justifyContent: 'center', padding: '0.75rem 0 0.5rem' }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)' }} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem 0.75rem' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>More</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>More</span>
               <button onClick={() => setMoreOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}>
                 <XMarkIcon style={{ width: 18, height: 18 }} />
               </button>
@@ -300,38 +316,37 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 return (
                   <Link
                     key={item.name}
-                    href={item.href}
+                    href={item.href as Route}
                     onClick={() => setMoreOpen(false)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '0.875rem',
-                      padding: '0.875rem 0.75rem',
-                      borderRadius: 10,
-                      marginBottom: '0.25rem',
+                      padding: '0.75rem',
+                      borderRadius: 0,
+                      marginBottom: '0.2rem',
                       color: active ? 'var(--orange)' : 'var(--text)',
                       background: active ? 'var(--orange-dim)' : 'transparent',
                       textDecoration: 'none',
-                      fontSize: '0.95rem', fontWeight: 500,
+                      fontSize: '0.9rem', fontWeight: 500,
                     }}
                   >
-                    <item.icon style={{ width: 22, height: 22, color: active ? 'var(--orange)' : 'var(--text-secondary)' }} />
+                    <item.icon style={{ width: 20, height: 20, color: active ? 'var(--orange)' : 'var(--text-secondary)' }} />
                     {item.name}
                   </Link>
                 );
               })}
             </div>
 
-            {/* Logout in sheet */}
             <div style={{ padding: '0.75rem 0.75rem 0', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
               <button
                 onClick={handleLogout}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '0.875rem', width: '100%',
-                  padding: '0.875rem 0.75rem', borderRadius: 10,
+                  padding: '0.75rem', borderRadius: 8,
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--danger)', fontSize: '0.95rem', fontWeight: 500,
+                  color: 'var(--danger)', fontSize: '0.9rem', fontWeight: 500,
                 }}
               >
-                <ArrowRightOnRectangleIcon style={{ width: 22, height: 22 }} />
+                <ArrowRightOnRectangleIcon style={{ width: 20, height: 20 }} />
                 Sign out
               </button>
             </div>
