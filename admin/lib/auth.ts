@@ -1,8 +1,11 @@
+import { getAuthDb } from "@tayo/database";
 import { betterAuth } from "better-auth";
-import { getDb } from "@tayo/database";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 export const auth = betterAuth({
-  database: getDb(),
+  database: drizzleAdapter(getAuthDb(), {
+    provider: "pg",
+  }),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
@@ -10,29 +13,24 @@ export const auth = betterAuth({
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5 minutes
+      maxAge: 5 * 60,
     },
   },
-  // Admin role configuration
   user: {
     additionalFields: {
-      role: {
-        type: "string",
-        defaultValue: "user",
-        required: false,
-      },
+      role: { type: "string", required: false, defaultValue: "customer" },
     },
   },
-  socialProviders: {
-    // Disable social providers for admin
+  socialProviders: {},
+  advanced: {
+    cookiePrefix: "tayo-admin",
   },
 });
 
-// Type augmentation for user with role
-declare module "better-auth" {
-  interface User {
-    role: "admin" | "user";
-  }
-}
+// declare module "better-auth" {
+//   interface User {
+//     role: "admin" | "user";
+//   }
+// }
 
 export type Session = typeof auth.$Infer.Session;

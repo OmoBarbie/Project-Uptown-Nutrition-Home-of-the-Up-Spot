@@ -1,17 +1,15 @@
-import { getDb, schema } from '@tayo/database'
+import { getAuthDb } from '@tayo/database'
 import { sendResetPasswordEmail, sendVerifyEmail } from '@tayo/email'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 
 export const auth = betterAuth({
-  database: drizzleAdapter(getDb(), {
+  logger: {
+    disabled: false,
+    level: 'debug',
+  },
+  database: drizzleAdapter(getAuthDb(), {
     provider: 'pg',
-    schema: {
-      user: schema.users,
-      session: schema.session,
-      account: schema.account,
-      verification: schema.verification,
-    },
   }),
   emailAndPassword: {
     enabled: true,
@@ -30,24 +28,22 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
-    cookieCache: { enabled: true, maxAge: 5 * 60 },
+    cookieCache: { enabled: false },
   },
   user: {
     additionalFields: {
       role: { type: 'string', required: false, defaultValue: 'customer', input: false },
       phone: { type: 'string', required: false },
-      isBanned: {
-        type: 'boolean',
-        required: false,
-        defaultValue: false,
-        input: false,
-      },
+      isBanned: { type: 'boolean', required: false, defaultValue: false, input: false },
     },
   },
   trustedOrigins: [
     'http://localhost:3000',
-    process.env.NEXT_PUBLIC_CLIENT_URL || '',
+    ...(process.env.NEXT_PUBLIC_CLIENT_URL ? [process.env.NEXT_PUBLIC_CLIENT_URL] : []),
   ],
+  advanced: {
+    cookiePrefix: 'tayo-client',
+  },
 })
 
 export type Session = typeof auth.$Infer.Session.session
