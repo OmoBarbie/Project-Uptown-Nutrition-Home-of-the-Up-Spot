@@ -78,7 +78,7 @@ function AccountContent() {
     if (!isPending && !userId) {
       router.push('/login?callbackUrl=/account')
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react/exhaustive-deps
   }, [isPending, userId])
 
   // Refetch session when profile is updated successfully
