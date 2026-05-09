@@ -1,5 +1,11 @@
 export { getDb, schema } from './db';
 export type { Database } from './db';
+export { getAuthDb } from './auth-db';
+
+export type {
+  NewsletterSubscriber,
+  NewNewsletterSubscriber,
+} from './schema/newsletter';
 
 // Re-export all types
 export type {

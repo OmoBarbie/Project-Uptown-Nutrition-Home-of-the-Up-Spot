@@ -11,7 +11,7 @@ export const users = pgTable('users', {
   role: userRoleEnum('role').notNull().default('customer'),
   emailVerified: boolean('email_verified').notNull().default(false),
   phone: varchar('phone', { length: 20 }),
-  avatarUrl: text('avatar_url'),
+  image: text('avatar_url'),
   isBanned: boolean('is_banned').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

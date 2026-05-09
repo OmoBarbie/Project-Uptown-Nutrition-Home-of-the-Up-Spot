@@ -16,7 +16,7 @@
     "@neondatabase/serverless": "^0.10.4",
     "@paralleldrive/cuid2": "^2.2.2",
     "dotenv": "^17.2.3",
-    "drizzle-orm": "^0.37.0"
+    "drizzle-orm": "0.45.1"
   },
   "devDependencies": {
     "@types/node": "^20",
