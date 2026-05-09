@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { addToCart } from '@/app/actions/cart'
+import { useState } from 'react'
+import { useCart } from '@/app/context/CartContext'
 
 interface Props {
   productId: string
@@ -10,18 +10,14 @@ interface Props {
 }
 
 export function AddToCartButton({ productId, variantId, maxQuantity }: Props) {
+  const { addItem, isPending } = useCart()
   const [quantity, setQuantity] = useState(1)
-  const [isPending, startTransition] = useTransition()
   const [added, setAdded] = useState(false)
 
-  function handleAdd() {
-    startTransition(async () => {
-      const result = await addToCart(productId, variantId, quantity)
-      if (result.success) {
-        setAdded(true)
-        setTimeout(setAdded, 2000, false)
-      }
-    })
+  async function handleAdd() {
+    await addItem(productId, variantId, quantity)
+    setAdded(true)
+    setTimeout(setAdded, 2000, false)
   }
 
   return (

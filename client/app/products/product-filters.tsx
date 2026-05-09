@@ -34,7 +34,7 @@ export function ProductFilters({ categories, currentQ, currentCategory, currentS
   }, [router, searchParams])
 
   return (
-    <div className="flex flex-wrap gap-3 items-center mb-6">
+    <div className="flex flex-wrap gap-4 items-center mb-8 border-b border-sand pb-6">
       <input
         type="search"
         defaultValue={currentQ}
@@ -44,13 +44,13 @@ export function ProductFilters({ categories, currentQ, currentCategory, currentS
           const timer = setTimeout(updateParam, 300, 'q', v)
           return () => clearTimeout(timer)
         }}
-        className="border rounded-md px-3 py-2 text-sm w-52"
+        className="border border-sand px-3 py-2 text-sm w-52 focus:outline-none focus:ring-1 focus:ring-forest-600"
       />
 
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-0 overflow-x-auto">
         <button
           onClick={() => updateParam('category', '')}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium ${!currentCategory ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+          className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${!currentCategory ? 'border-forest-600 text-forest-600' : 'border-transparent text-charcoal/60 hover:text-charcoal hover:border-sand'}`}
         >
           All
         </button>
@@ -58,7 +58,7 @@ export function ProductFilters({ categories, currentQ, currentCategory, currentS
           <button
             key={c.id}
             onClick={() => updateParam('category', c.slug)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium ${currentCategory === c.slug ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+            className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${currentCategory === c.slug ? 'border-forest-600 text-forest-600' : 'border-transparent text-charcoal/60 hover:text-charcoal hover:border-sand'}`}
           >
             {c.name}
           </button>
@@ -68,7 +68,7 @@ export function ProductFilters({ categories, currentQ, currentCategory, currentS
       <select
         value={currentSort}
         onChange={e => updateParam('sort', e.target.value)}
-        className="border rounded-md px-2 py-2 text-sm ml-auto"
+        className="border border-sand px-2 py-2 text-sm ml-auto bg-background focus:outline-none focus:ring-1 focus:ring-forest-600"
       >
         <option value="">Sort: Default</option>
         <option value="price_asc">Price: Low to High</option>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Container } from '@/components/Container'
+import { NewsletterForm } from '@/components/newsletter-form'
 
 function SocialIconInstagram(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -69,29 +70,7 @@ export function Footer() {
               </h2>
             </div>
 
-            <div>
-              <p className="text-sm text-cream-100/40 mb-6 leading-relaxed">
-                Exclusive menu items, nutrition tips, and special offers —
-                delivered to your inbox.
-              </p>
-              <form className="flex gap-0">
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="flex-1 min-w-0 bg-cream-100/8 border border-cream-100/15 px-4 py-3 text-sm text-cream-100 placeholder:text-cream-100/25 focus:outline-none focus:border-terracotta-400 transition-colors"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-terracotta-500 text-cream-100 text-sm font-semibold tracking-wide hover:bg-terracotta-400 transition-colors whitespace-nowrap"
-                >
-                  Subscribe
-                </button>
-              </form>
-              <p className="mt-3 text-xs text-cream-100/25">
-                We respect your privacy. Unsubscribe anytime.
-              </p>
-            </div>
+            <NewsletterForm />
           </div>
         </Container>
       </div>

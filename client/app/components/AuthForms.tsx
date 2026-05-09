@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { signIn, signUp } from '@/lib/auth-client'
 
-export function SignInForm() {
+export function SignInForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -18,19 +18,22 @@ export function SignInForm() {
 
     try {
       const result = await signIn.email({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       })
 
       if (result.error) {
+        console.error('[sign-in] API error:', result.error)
         setError(result.error.message || 'Failed to sign in')
         return
       }
 
-      router.push('/')
+      console.log('[sign-in] success, redirecting')
       router.refresh()
+      router.push(callbackUrl || '/')
     }
-    catch {
+    catch (err) {
+      console.error('[sign-in] unexpected exception:', err)
       setError('An unexpected error occurred')
     }
     finally {
@@ -89,7 +92,7 @@ export function SignInForm() {
   )
 }
 
-export function SignUpForm() {
+export function SignUpForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -103,21 +106,25 @@ export function SignUpForm() {
     setLoading(true)
 
     try {
+      console.log('[sign-up] attempting with email:', email)
       const result = await signUp.email({
-        email,
+        email: email.trim().toLowerCase(),
         password,
-        name,
+        name: name.trim(),
       })
 
       if (result.error) {
+        console.error('[sign-up] API error:', result.error)
         setError(result.error.message || 'Failed to sign up')
         return
       }
 
-      router.push('/')
+      console.log('[sign-up] success, redirecting')
       router.refresh()
+      router.push(callbackUrl || '/')
     }
-    catch {
+    catch (err) {
+      console.error('[sign-up] unexpected exception:', err)
       setError('An unexpected error occurred')
     }
     finally {

@@ -3,7 +3,7 @@
 import type { CheckoutState } from './actions'
 import type { CartItem } from '@/app/context/CartContext'
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
-import { useActionState, useEffect, useState } from 'react'
+import { startTransition, useActionState, useState } from 'react'
 import { createPaymentIntent } from './actions'
 import { CouponInput } from './coupon-input'
 
@@ -19,6 +19,9 @@ interface CheckoutFormProps {
   tax: number
   deliveryFee: number
   total: number
+  discount: number
+  couponCode: string
+  onDiscountChange: (discount: number, code: string) => void
   userEmail?: string
   userName?: string
 }
@@ -52,6 +55,9 @@ export function CheckoutForm({
   tax: _tax,
   deliveryFee: _deliveryFee,
   total,
+  discount,
+  couponCode,
+  onDiscountChange,
   userEmail,
   userName,
 }: CheckoutFormProps) {
@@ -59,25 +65,27 @@ export function CheckoutForm({
   const elements = useElements()
   const [state, formAction] = useActionState(createPaymentIntent, initialState)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [paymentReady, setPaymentReady] = useState(false)
-  const [discount, setDiscount] = useState(0)
-  const [couponCode, setCouponCode] = useState('')
-
-  useEffect(() => {
-    if (state.clientSecret && stripe) setPaymentReady(true)
-  }, [state.clientSecret, stripe])
+  const paymentReady = !!(state.clientSecret && stripe)
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!stripe || !elements) return
+    if (!stripe || !elements)
+      return
 
     if (!state.clientSecret) {
-      formAction(new FormData(event.currentTarget))
+      startTransition(() => formAction(new FormData(event.currentTarget)))
       return
     }
 
     setIsProcessing(true)
     try {
+      const { error: submitError } = await elements.submit()
+      if (submitError) {
+        console.error(submitError)
+        setIsProcessing(false)
+        return
+      }
+
       const { error } = await stripe.confirmPayment({
         elements,
         clientSecret: state.clientSecret!,
@@ -85,7 +93,8 @@ export function CheckoutForm({
           return_url: `${window.location.origin}/orders/${state.orderId}?success=true`,
         },
       })
-      if (error) console.error(error)
+      if (error)
+        console.error(error)
     }
     catch (err) {
       console.error('Payment error:', err)
@@ -103,11 +112,8 @@ export function CheckoutForm({
       <FormSection title="Coupon Code">
         <CouponInput
           subtotal={subtotal}
-          onApply={(d, c) => { setDiscount(d); setCouponCode(c) }}
+          onApply={onDiscountChange}
         />
-        {discount > 0 && (
-          <p className="mt-2 text-sm text-forest-600">Discount applied: −${discount.toFixed(2)}</p>
-        )}
       </FormSection>
 
       <FormSection title="Contact Information">
@@ -124,7 +130,8 @@ export function CheckoutForm({
         </div>
       </FormSection>
 
-      <FormSection title="Delivery Address">
+      {/* eslint-disable-next-line style/spaced-comment */}
+      {/*<FormSection title="Delivery Address">
         <div className="space-y-4">
           <Field id="street" label="Street Address" error={state.errors?.address?.[0]}>
             <input type="text" id="street" name="street" required className={inputCls} />
@@ -141,7 +148,7 @@ export function CheckoutForm({
             <input type="text" id="zipCode" name="zipCode" required className={inputCls} />
           </Field>
         </div>
-      </FormSection>
+      </FormSection> */}
 
       {paymentReady && (
         <FormSection title="Payment">

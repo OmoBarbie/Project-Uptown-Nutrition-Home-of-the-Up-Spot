@@ -15,7 +15,8 @@ export function CouponInput({ subtotal, onApply }: Props) {
   const [isPending, startTransition] = useTransition()
 
   function handleApply() {
-    if (!code.trim()) return
+    if (!code.trim())
+      return
     setError('')
     startTransition(async () => {
       const result = await applyCoupon(code, subtotal)
@@ -34,7 +35,10 @@ export function CouponInput({ subtotal, onApply }: Props) {
         <span className="text-forest-700 font-medium">{applied}</span>
         <button
           type="button"
-          onClick={() => { setApplied(''); onApply(0, '') }}
+          onClick={() => {
+            setApplied('')
+            onApply(0, '')
+          }}
           className="text-foreground/40 hover:text-charcoal transition-colors"
         >
           ✕

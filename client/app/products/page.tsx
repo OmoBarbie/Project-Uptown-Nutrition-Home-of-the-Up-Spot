@@ -104,7 +104,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       slug: product.slug,
       description: product.description,
       price: product.price,
-      emoji: product.emoji,
+      emoji: product.emoji ?? '🥤',
       category: product.category.name,
       categorySlug: product.category.slug,
       isFeatured: product.isFeatured,
@@ -125,7 +125,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   return (
     <>
       <Header />
-      <main className="bg-white dark:bg-slate-950">
+      <main className="bg-background dark:bg-background">
         <Container className="py-16">
           <ProductFilters
             categories={categoryFilters}
@@ -147,7 +147,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                   <a
                     key={p}
                     href={`/products?${params}`}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium ${p === currentPage ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                    className={`px-3 py-1.5 text-sm font-medium ${p === currentPage ? 'bg-forest-600 text-cream' : 'bg-sand text-charcoal hover:bg-sand/70'}`}
                   >
                     {p}
                   </a>

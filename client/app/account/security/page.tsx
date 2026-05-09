@@ -13,11 +13,11 @@ export default function SecurityPage() {
     return (
       <>
         <Header />
-        <main className="min-h-screen bg-white py-16">
+        <main className="bg-background min-h-screen py-16">
           <Container>
             <div className="animate-pulse">
-              <div className="h-8 bg-slate-200 rounded w-1/4 mb-8"></div>
-              <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
+              <div className="h-8 bg-sand w-1/4 mb-8"></div>
+              <div className="h-4 bg-sand w-1/2 mb-4"></div>
             </div>
           </Container>
         </main>
@@ -33,84 +33,85 @@ export default function SecurityPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white py-16 sm:py-24">
-        <Container>
-          <div className="mx-auto max-w-2xl lg:max-w-4xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-                  Security Settings
-                </h1>
-                <p className="mt-2 text-sm text-slate-600">
-                  Manage your password and security preferences.
-                </p>
+      <main className="bg-background min-h-screen">
+        {/* Hero section */}
+        <div className="bg-background border-b border-sand pt-20 pb-12">
+          <Container>
+            <div className="mx-auto max-w-2xl lg:max-w-4xl">
+              <div className="flex items-center gap-3 mb-5">
+                <span className="h-px w-8 bg-terracotta-500" />
+                <span className="text-xs font-semibold tracking-[0.22em] uppercase text-terracotta-500">My account</span>
               </div>
-              <Link
-                href="/account"
-                className="text-sm text-slate-600 hover:text-slate-900"
-              >
-                ← Back to account
-              </Link>
+              <div className="flex items-start justify-between">
+                <h1 className="font-display text-5xl sm:text-6xl font-medium text-charcoal leading-[0.92]">
+                  Security
+                </h1>
+                <Link
+                  href="/account"
+                  className="text-sm text-charcoal/60 hover:text-charcoal mt-2"
+                >
+                  ← Account
+                </Link>
+              </div>
             </div>
+          </Container>
+        </div>
 
-            <div className="mt-10 space-y-8">
-              {/* Change Password */}
-              <div className="bg-white shadow-sm ring-1 ring-slate-900/5 sm:rounded-xl">
-                <div className="px-4 py-6 sm:p-8">
-                  <h2 className="text-base font-semibold leading-7 text-slate-900">
+        {/* Content area */}
+        <div className="py-12 sm:py-16">
+          <Container>
+            <div className="mx-auto max-w-2xl lg:max-w-4xl">
+              <div className="space-y-8">
+                {/* Change Password */}
+                <div className="border border-sand p-6 sm:p-8">
+                  <h2 className="font-display text-2xl text-charcoal mb-1">
                     Change Password
                   </h2>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                  <p className="text-sm text-charcoal/60 mb-6">
                     Update your password to keep your account secure.
                   </p>
 
-                  <div className="mt-6 space-y-4">
+                  <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium leading-6 text-slate-900">
+                      <label className="block text-xs font-semibold tracking-[0.15em] uppercase text-charcoal/60 mb-1">
                         Current Password
                       </label>
-                      <div className="mt-2">
-                        <input
-                          type="password"
-                          className="block w-full rounded-md border-0 py-1.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
-                        />
-                      </div>
+                      <input
+                        type="password"
+                        className="block w-full border border-sand px-3 py-2 text-sm text-charcoal bg-background focus:outline-none focus:ring-1 focus:ring-forest-600 focus:border-forest-600"
+                      />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium leading-6 text-slate-900">
+                      <label className="block text-xs font-semibold tracking-[0.15em] uppercase text-charcoal/60 mb-1">
                         New Password
                       </label>
-                      <div className="mt-2">
-                        <input
-                          type="password"
-                          className="block w-full rounded-md border-0 py-1.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
-                        />
-                      </div>
+                      <input
+                        type="password"
+                        className="block w-full border border-sand px-3 py-2 text-sm text-charcoal bg-background focus:outline-none focus:ring-1 focus:ring-forest-600 focus:border-forest-600"
+                      />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium leading-6 text-slate-900">
+                      <label className="block text-xs font-semibold tracking-[0.15em] uppercase text-charcoal/60 mb-1">
                         Confirm New Password
                       </label>
-                      <div className="mt-2">
-                        <input
-                          type="password"
-                          className="block w-full rounded-md border-0 py-1.5 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
-                        />
-                      </div>
+                      <input
+                        type="password"
+                        className="block w-full border border-sand px-3 py-2 text-sm text-charcoal bg-background focus:outline-none focus:ring-1 focus:ring-forest-600 focus:border-forest-600"
+                      />
                     </div>
 
                     <div className="flex items-center justify-end gap-x-6 mt-6">
                       <button
                         type="button"
-                        className="text-sm font-semibold leading-6 text-slate-900"
+                        className="text-sm font-medium text-charcoal/60 hover:text-charcoal"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+                        className="bg-forest-600 text-cream px-4 py-2.5 text-sm font-medium hover:bg-forest-700 transition-colors"
                       >
                         Update Password
                       </button>
@@ -119,8 +120,8 @@ export default function SecurityPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </Container>
+          </Container>
+        </div>
       </main>
       <Footer />
     </>

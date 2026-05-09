@@ -1,7 +1,7 @@
 'use server'
 
 import { getDb, schema } from '@tayo/database'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
@@ -60,19 +60,27 @@ export async function markReviewHelpful(reviewId: string, isHelpful: boolean) {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
   if (!session)
-    return
+    return { error: 'You must be logged in' }
 
-  const existing = await db.query.reviewHelpful.findFirst({
-    where: and(eq(schema.reviewHelpful.reviewId, reviewId), eq(schema.reviewHelpful.userId, session.user.id)),
-  })
+  try {
+    const existing = await db.query.reviewHelpful.findFirst({
+      where: and(eq(schema.reviewHelpful.reviewId, reviewId), eq(schema.reviewHelpful.userId, session.user.id)),
+    })
 
-  if (existing) {
-    await db.update(schema.reviewHelpful).set({ isHelpful }).where(eq(schema.reviewHelpful.id, existing.id))
-  }
-  else {
-    await db.insert(schema.reviewHelpful).values({ reviewId, userId: session.user.id, isHelpful })
-    if (isHelpful) {
-      await db.update(schema.reviews).set({ helpfulCount: schema.reviews.helpfulCount + 1 }).where(eq(schema.reviews.id, reviewId))
+    if (existing) {
+      await db.update(schema.reviewHelpful).set({ isHelpful }).where(eq(schema.reviewHelpful.id, existing.id))
     }
+    else {
+      await db.insert(schema.reviewHelpful).values({ reviewId, userId: session.user.id, isHelpful })
+      if (isHelpful) {
+        await db.update(schema.reviews).set({ helpfulCount: sql`${schema.reviews.helpfulCount} + 1` }).where(eq(schema.reviews.id, reviewId))
+      }
+    }
+
+    revalidatePath(`/products/[id]`, 'page')
+    return { success: true }
+  }
+  catch {
+    return { error: 'Failed to record your vote' }
   }
 }

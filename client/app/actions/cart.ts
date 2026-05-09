@@ -30,28 +30,54 @@ async function getOrCreateCart() {
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
   const userId = session?.user?.id
-  const sessionId = userId ? null : await getOrCreateSessionId()
+  const sessionId = await getOrCreateSessionId()
 
-  // Find existing cart
-  let cart = await db.query.carts.findFirst({
-    where: userId
-      ? eq(schema.carts.userId, userId)
-      : and(
-          eq(schema.carts.sessionId, sessionId!),
+  if (userId) {
+    // Authenticated: find user cart
+    let cart = await db.query.carts.findFirst({
+      where: eq(schema.carts.userId, userId),
+    })
+
+    // If no user cart, check for an unmerged guest cart and merge it first
+    if (!cart) {
+      const guestCart = await db.query.carts.findFirst({
+        where: and(
+          eq(schema.carts.sessionId, sessionId),
           isNull(schema.carts.userId),
         ),
+        with: { cartItems: true },
+      })
+
+      if (guestCart && guestCart.cartItems.length > 0) {
+        await mergeGuestCart(userId, sessionId)
+        cart = await db.query.carts.findFirst({
+          where: eq(schema.carts.userId, userId),
+        })
+      }
+    }
+
+    if (!cart) {
+      const [newCart] = await db.insert(schema.carts).values({ userId }).returning()
+      cart = newCart
+    }
+
+    return { cart, userId, sessionId }
+  }
+
+  // Guest: find or create by sessionId
+  let cart = await db.query.carts.findFirst({
+    where: and(
+      eq(schema.carts.sessionId, sessionId),
+      isNull(schema.carts.userId),
+    ),
   })
 
-  // Create cart if it doesn't exist
   if (!cart) {
-    const [newCart] = await db.insert(schema.carts).values({
-      userId: userId || null,
-      sessionId: sessionId || null,
-    }).returning()
+    const [newCart] = await db.insert(schema.carts).values({ sessionId }).returning()
     cart = newCart
   }
 
-  return { cart, userId, sessionId }
+  return { cart, userId: null, sessionId }
 }
 
 export async function addToCart(productId: string, variantId?: string | null, quantity = 1) {

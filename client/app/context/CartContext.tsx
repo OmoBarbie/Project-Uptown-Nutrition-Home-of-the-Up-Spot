@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { createContext, use, useCallback, useEffect, useOptimistic, useState, useTransition } from 'react'
+import { createContext, use, useCallback, useEffect, useOptimistic, useRef, useState, useTransition } from 'react'
 import { addToCart, getCart, removeFromCart, updateCartItemQuantity } from '@/app/actions/cart'
 import { useCartSync } from '@/app/hooks/useCartSync'
 import { useSession } from '@/lib/auth-client'
@@ -85,8 +85,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [optimisticItems, setOptimisticItems] = useOptimistic(items, cartReducer)
   const [isPending, startTransition] = useTransition()
-  const [isInitialized, setIsInitialized] = useState(false)
-  const { data: session } = useSession()
+  const isInitializedRef = useRef(false)
+  const { data: session, isPending: sessionPending } = useSession()
+  const prevUserIdRef = useRef<string | null | undefined>(undefined)
 
   // Fetch cart on mount
   const refreshCart = useCallback(async () => {
@@ -132,11 +133,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   })
 
   useEffect(() => {
-    if (!isInitialized) {
+    if (sessionPending)
+      return
+    const currentUserId = session?.user?.id ?? null
+    if (!isInitializedRef.current || prevUserIdRef.current !== currentUserId) {
+      prevUserIdRef.current = currentUserId
+      isInitializedRef.current = true
       refreshCart()
-      setIsInitialized(true)
     }
-  }, [isInitialized, refreshCart])
+  }, [sessionPending, session?.user?.id, refreshCart])
 
   const addItem = async (productId: string, variantId?: string | null, quantity?: number) => {
     startTransition(async () => {

@@ -5,6 +5,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useCart } from '@/app/context/CartContext'
+import { useMounted } from '@/app/hooks/use-mounted'
 import { Container } from '@/components/Container'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
@@ -13,17 +14,33 @@ import { CheckoutForm } from './checkout-form'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
+function calcStripeFee(amount: number) {
+  return Math.round((amount * 0.029 + 0.30) * 100) / 100
+}
+
 export default function CheckoutPage() {
   const { optimisticItems, subtotal } = useCart()
-  const { data: session } = useSession()
+  const { data: session, isPending: sessionPending } = useSession()
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
+  const mounted = useMounted()
+  const [discount, setDiscount] = useState(0)
+  const [couponCode, setCouponCode] = useState('')
 
-  useEffect(() => { setMounted(true) }, [])
+  const cartEmpty = optimisticItems.length === 0
+  const sessionUserId = session?.user?.id ?? null
 
   useEffect(() => {
-    if (mounted && optimisticItems.length === 0) router.push('/cart')
-  }, [mounted, optimisticItems.length, router])
+    if (mounted && cartEmpty)
+      router.push('/cart')
+  // eslint-disable-next-line react/exhaustive-deps
+  }, [mounted, cartEmpty])
+
+  useEffect(() => {
+    if (mounted && !sessionPending && !sessionUserId) {
+      router.push('/login?callbackUrl=/checkout')
+    }
+  // eslint-disable-next-line react/exhaustive-deps
+  }, [mounted, sessionPending, sessionUserId])
 
   if (!mounted) {
     return (
@@ -42,11 +59,20 @@ export default function CheckoutPage() {
     )
   }
 
-  if (optimisticItems.length === 0) return null
+  if (optimisticItems.length === 0)
+    return null
 
   const tax = subtotal * 0.08
-  const deliveryFee = subtotal >= 50 ? 0 : 5
-  const total = subtotal + tax + deliveryFee
+  const deliveryFee = 0
+  const afterDiscount = Math.max(0, subtotal - discount)
+  const baseTotal = afterDiscount + tax + deliveryFee
+  const stripeFee = calcStripeFee(baseTotal)
+  const grandTotal = baseTotal + stripeFee
+
+  function handleDiscountChange(d: number, code: string) {
+    setDiscount(d)
+    setCouponCode(code)
+  }
 
   return (
     <>
@@ -73,7 +99,7 @@ export default function CheckoutPage() {
                 stripe={stripePromise}
                 options={{
                   mode: 'payment',
-                  amount: Math.round(total * 100),
+                  amount: Math.max(50, Math.round(grandTotal * 100)),
                   currency: 'usd',
                   appearance: {
                     theme: 'flat',
@@ -93,12 +119,17 @@ export default function CheckoutPage() {
                   },
                 }}
               >
+                {/* key resets form (and discards any existing PaymentIntent) when discount changes */}
                 <CheckoutForm
+                  key={discount}
                   cartItems={optimisticItems}
                   subtotal={subtotal}
                   tax={tax}
                   deliveryFee={deliveryFee}
-                  total={total}
+                  total={grandTotal}
+                  discount={discount}
+                  couponCode={couponCode}
+                  onDiscountChange={handleDiscountChange}
                   userEmail={session?.user.email}
                   userName={session?.user.name}
                 />
@@ -116,36 +147,68 @@ export default function CheckoutPage() {
                       <div className="text-3xl w-10 shrink-0">{item.imageSrc}</div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-charcoal truncate">{item.name}</p>
-                        <p className="text-xs text-foreground/50 mt-0.5">Qty {item.quantity}</p>
+                        <p className="text-xs text-foreground/50 mt-0.5">
+                          Qty
+                          {item.quantity}
+                        </p>
                       </div>
                       <p className="text-sm font-semibold text-charcoal shrink-0">
-                        ${(Number.parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
+                        $
+                        {(Number.parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   ))}
                 </div>
 
                 <div className="border-t border-sand pt-4 space-y-2 mt-2">
-                  {[
-                    { label: 'Subtotal', value: `$${subtotal.toFixed(2)}` },
-                    { label: 'Tax (8%)', value: `$${tax.toFixed(2)}` },
-                    { label: 'Delivery', value: deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`, highlight: deliveryFee === 0 },
-                  ].map(({ label, value, highlight }) => (
-                    <div key={label} className="flex justify-between text-sm">
-                      <span className="text-foreground/60">{label}</span>
-                      <span className={highlight ? 'text-forest-600 font-semibold' : 'text-charcoal'}>{value}</span>
-                    </div>
-                  ))}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-foreground/60">Subtotal</span>
+                    <span className="text-charcoal">
+                      $
+                      {subtotal.toFixed(2)}
+                    </span>
+                  </div>
 
-                  {subtotal < 50 && (
-                    <p className="text-xs text-terracotta-500 px-3 py-2 bg-terracotta-500/8">
-                      Add ${(50 - subtotal).toFixed(2)} more for free delivery
-                    </p>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-terracotta-500 font-medium">
+                        Discount
+                        {couponCode && ` (${couponCode})`}
+                      </span>
+                      <span className="text-terracotta-500 font-medium">
+                        −$
+                        {discount.toFixed(2)}
+                      </span>
+                    </div>
                   )}
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-foreground/60">Tax (8%)</span>
+                    <span className="text-charcoal">
+                      $
+                      {tax.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-foreground/60">Delivery</span>
+                    <span className="text-forest-600 font-semibold">FREE</span>
+                  </div>
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-foreground/60">Processing fee (2.9% + $0.30)</span>
+                    <span className="text-charcoal">
+                      $
+                      {stripeFee.toFixed(2)}
+                    </span>
+                  </div>
 
                   <div className="flex justify-between pt-3 border-t border-sand">
                     <span className="font-display text-lg font-medium text-charcoal">Total</span>
-                    <span className="font-display text-lg font-medium text-charcoal">${total.toFixed(2)}</span>
+                    <span className="font-display text-lg font-medium text-charcoal">
+                      $
+                      {grandTotal.toFixed(2)}
+                    </span>
                   </div>
                 </div>
 

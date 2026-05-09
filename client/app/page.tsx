@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
+import type { FeaturedCategory } from '@/components/Products'
 import { getDb, schema } from '@tayo/database'
 import { desc, eq } from 'drizzle-orm'
 import { Features } from '@/components/Features'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { Hero } from '@/components/Hero'
-import type { FeaturedCategory } from '@/components/Products'
 import { Products } from '@/components/Products'
 import { Testimonials } from '@/components/Testimonials'
 
@@ -76,11 +76,16 @@ function buildFeatures(product: {
   sugar: number | null
 }): string[] {
   const features: string[] = []
-  if (product.calories) features.push(`${product.calories} Cal`)
-  if (product.protein) features.push(`${product.protein}g Protein`)
-  if (product.carbs) features.push(`${product.carbs}g Carbs`)
-  if (product.fiber) features.push(`${product.fiber}g Fiber`)
-  if (product.sugar) features.push(`${product.sugar}g Sugar`)
+  if (product.calories)
+    features.push(`${product.calories} Cal`)
+  if (product.protein)
+    features.push(`${product.protein}g Protein`)
+  if (product.carbs)
+    features.push(`${product.carbs}g Carbs`)
+  if (product.fiber)
+    features.push(`${product.fiber}g Fiber`)
+  if (product.sugar)
+    features.push(`${product.sugar}g Sugar`)
   return features
 }
 
@@ -118,7 +123,8 @@ export default async function Home() {
         features: buildFeatures(product),
       })
     }
-    if (categoryMap.size >= 4 && group.items.length >= 2) continue
+    if (categoryMap.size >= 4 && group.items.length >= 2)
+      continue
   }
 
   const categories = Array.from(categoryMap.values()).filter(c => c.items.length > 0).slice(0, 4)

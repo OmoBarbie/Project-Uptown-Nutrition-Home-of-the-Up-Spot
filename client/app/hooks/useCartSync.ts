@@ -19,9 +19,8 @@ export function useCartSync({ roomId, enabled, onMessage }: UseCartSyncOptions) 
   const socket = usePartySocket({
     host: process.env.NEXT_PUBLIC_PARTYKIT_HOST || 'localhost:1999',
     party: 'cart',
-    room: roomId,
-    // Only connect when enabled and we have a room ID
-    enabled: enabled && Boolean(roomId),
+    // Connect only when enabled and we have a room ID; empty room prevents connection
+    room: enabled && roomId ? roomId : '',
   })
 
   useEffect(() => {

@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
     setError('')
     startTransition(async () => {
       const { error } = await authClient.requestPasswordReset({
-        email,
+        email: email.trim().toLowerCase(),
         redirectTo: '/reset-password',
       })
       if (error) {
@@ -32,6 +32,7 @@ export default function ForgotPasswordPage() {
           <p className="text-2xl font-bold mb-2">Check your email</p>
           <p className="text-gray-600">
             We sent a reset link to
+            {` `}
             <strong>{email}</strong>
           </p>
         </div>

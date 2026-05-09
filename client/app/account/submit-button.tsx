@@ -9,9 +9,9 @@ export function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+      className="bg-forest-600 text-cream px-4 py-2.5 text-sm font-medium hover:bg-forest-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {pending ? 'Saving...' : 'Save changes'}
+      {pending ? 'Saving…' : 'Save changes'}
     </button>
   )
 }

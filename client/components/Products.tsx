@@ -30,7 +30,11 @@ interface Props {
 }
 
 export function Products({ categories }: Props) {
-  const [tabOrientation, setTabOrientation] = useState<'horizontal' | 'vertical'>('horizontal')
+  const [tabOrientation, setTabOrientation] = useState<'horizontal' | 'vertical'>(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+      ? 'vertical'
+      : 'horizontal',
+  )
   const { addItem, isPending } = useCart()
   const [addedId, setAddedId] = useState<string | null>(null)
 
@@ -39,7 +43,6 @@ export function Products({ categories }: Props) {
     function onMediaQueryChange({ matches }: { matches: boolean }) {
       setTabOrientation(matches ? 'vertical' : 'horizontal')
     }
-    onMediaQueryChange(lgMediaQuery)
     lgMediaQuery.addEventListener('change', onMediaQueryChange)
     return () => lgMediaQuery.removeEventListener('change', onMediaQueryChange)
   }, [])
@@ -161,7 +164,7 @@ export function Products({ categories }: Props) {
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      {group.items.map(item => {
+                      {group.items.map((item) => {
                         const isAdded = addedId === item.id
                         const outOfStock = item.stockQuantity === 0
                         return (
@@ -199,7 +202,11 @@ export function Products({ categories }: Props) {
                             {/* CTA */}
                             <button
                               type="button"
-                              onClick={(e) => { e.preventDefault(); if (!outOfStock) handleAddToCart(item) }}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                if (!outOfStock)
+                                  handleAddToCart(item)
+                              }}
                               disabled={isPending || outOfStock}
                               className="relative z-10 mt-6 w-full bg-forest-600 text-cream-100 py-2.5 text-sm font-semibold tracking-wide hover:bg-forest-700 active:bg-forest-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
