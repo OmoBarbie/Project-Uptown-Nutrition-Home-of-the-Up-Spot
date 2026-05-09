@@ -1,6 +1,7 @@
 import { getDb, schema } from '@tayo/database';
 import { eq } from 'drizzle-orm';
 import { approveReview, rejectReview, featureReview } from './actions';
+import { CheckIcon, TrashIcon, StarIcon } from '@heroicons/react/24/outline';
 
 export default async function ReviewsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab = 'pending' } = await searchParams;
@@ -13,58 +14,71 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
         : tab === 'approved'
           ? eq(schema.reviews.isApproved, true)
           : undefined,
-    with: { product: { columns: { name: true } } },
+    with: {
+      product: { columns: { name: true } },
+      user: { columns: { name: true, email: true } },
+    },
     orderBy: (r, { desc }) => [desc(r.createdAt)],
     limit: 50,
   });
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Reviews</h1>
-      <div className="flex gap-2 mb-6">
-        {['pending', 'approved', 'all'].map((t) => (
-          <a
-            key={t}
-            href={`/reviews?tab=${t}`}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium capitalize ${tab === t ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}
-          >
+    <div>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Reviews</h1>
+          <p className="page-subtitle">{reviews.length} reviews in this view</p>
+        </div>
+      </div>
+
+      <div className="tabs" style={{ marginBottom: '1.5rem' }}>
+        {(['pending','approved','all'] as const).map(t => (
+          <a key={t} href={`/reviews?tab=${t}`} className={`tab${tab === t ? ' tab-active' : ''}`} style={{ textTransform: 'capitalize' }}>
             {t}
           </a>
         ))}
       </div>
-      <div className="space-y-4">
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {reviews.map((r) => (
-          <div key={r.id} className="border rounded-lg p-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-medium">{r.product.name}</p>
-                <p className="text-sm text-gray-500">
-                  {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}{' '}
-                  {r.isVerifiedPurchase && (
-                    <span className="text-green-600 text-xs ml-1">Verified</span>
-                  )}
-                </p>
-                {r.title && <p className="font-medium mt-1">{r.title}</p>}
-                <p className="text-sm text-gray-700 mt-1">{r.comment}</p>
+          <div key={r.id} className="card-padded">
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--text)', fontSize: '0.95rem' }}>{r.product.name}</span>
+                  <span className="badge badge-orange" style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>
+                    {r.user.name || r.user.email}
+                  </span>
+                  {r.isVerifiedPurchase && <span className="badge badge-success">Verified</span>}
+                  {r.isFeatured && <span className="badge badge-blue">Featured</span>}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.5rem' }}>
+                  {[1,2,3,4,5].map(s => (
+                    <StarIcon key={s} style={{ width: 14, height: 14, fill: s <= r.rating ? '#F59E0B' : 'none', color: s <= r.rating ? '#F59E0B' : 'var(--border)', strokeWidth: 1.5 }} />
+                  ))}
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.25rem' }}>{r.createdAt.toLocaleDateString()}</span>
+                </div>
+                {r.title && <p style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>{r.title}</p>}
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{r.comment}</p>
               </div>
-              <div className="flex gap-2 shrink-0 ml-4">
+              <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, flexWrap: 'wrap' }}>
                 {!r.isApproved && (
                   <form action={approveReview.bind(null, r.id)}>
-                    <button type="submit" className="text-sm bg-green-100 text-green-700 px-2 py-1 rounded">
+                    <button type="submit" className="btn btn-success btn-sm">
+                      <CheckIcon style={{ width: 14, height: 14 }} />
                       Approve
                     </button>
                   </form>
                 )}
                 <form action={rejectReview.bind(null, r.id)}>
-                  <button type="submit" className="text-sm bg-red-100 text-red-700 px-2 py-1 rounded">
+                  <button type="submit" className="btn btn-danger btn-sm">
+                    <TrashIcon style={{ width: 14, height: 14 }} />
                     Reject
                   </button>
                 </form>
                 <form action={featureReview.bind(null, r.id, !r.isFeatured)}>
-                  <button
-                    type="submit"
-                    className={`text-sm px-2 py-1 rounded ${r.isFeatured ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}
-                  >
+                  <button type="submit" className={`btn btn-sm ${r.isFeatured ? 'btn-secondary' : 'btn-ghost'}`}>
+                    <StarIcon style={{ width: 14, height: 14 }} />
                     {r.isFeatured ? 'Unfeature' : 'Feature'}
                   </button>
                 </form>
@@ -72,7 +86,9 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
             </div>
           </div>
         ))}
-        {reviews.length === 0 && <p className="text-gray-500">No reviews in this tab.</p>}
+        {reviews.length === 0 && (
+          <div className="card-padded empty-state"><p>No reviews in this tab.</p></div>
+        )}
       </div>
     </div>
   );

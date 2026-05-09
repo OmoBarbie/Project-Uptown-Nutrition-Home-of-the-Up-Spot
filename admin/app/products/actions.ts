@@ -16,7 +16,6 @@ export type ProductFormState = {
     description?: string;
     price?: string;
     category?: string;
-    emoji?: string;
     stock?: string;
   };
 };
@@ -30,6 +29,7 @@ export async function createProduct(
   const price = formData.get('price') as string;
   const category = formData.get('category') as string;
   const emoji = formData.get('emoji') as string;
+  const imageUrl = formData.get('imageUrl') as string;
   const stock = formData.get('stock') as string;
 
   // Validation
@@ -49,10 +49,6 @@ export async function createProduct(
 
   if (!category || category.trim().length < 2) {
     errors.category = 'Category is required';
-  }
-
-  if (!emoji || emoji.trim().length === 0) {
-    errors.emoji = 'Emoji is required';
   }
 
   if (!stock || isNaN(parseInt(stock)) || parseInt(stock) < 0) {
@@ -83,9 +79,9 @@ export async function createProduct(
       description: description.trim(),
       price: parseFloat(price).toFixed(2),
       categoryId: category.trim(),
-      emoji: emoji.trim(),
+      emoji: emoji?.trim() || '',
       stockQuantity: parseInt(stock),
-      imageUrl: '', // TODO: Add image upload functionality
+      imageUrl: imageUrl?.trim() || '',
     };
 
     const [newProduct] = await db.insert(schema.products).values(productData).returning();
@@ -140,6 +136,7 @@ export async function updateProduct(
   const price = formData.get('price') as string;
   const category = formData.get('category') as string;
   const emoji = formData.get('emoji') as string;
+  const imageUrl = formData.get('imageUrl') as string;
   const stock = formData.get('stock') as string;
 
   // Validation
@@ -159,10 +156,6 @@ export async function updateProduct(
 
   if (!category || category.trim().length < 2) {
     errors.category = 'Category is required';
-  }
-
-  if (!emoji || emoji.trim().length === 0) {
-    errors.emoji = 'Emoji is required';
   }
 
   if (!stock || isNaN(parseInt(stock)) || parseInt(stock) < 0) {
@@ -200,7 +193,8 @@ export async function updateProduct(
       description: description.trim(),
       price: parseFloat(price).toFixed(2),
       categoryId: category.trim(),
-      emoji: emoji.trim(),
+      emoji: emoji?.trim() || '',
+      imageUrl: imageUrl?.trim() || '',
       stockQuantity: parseInt(stock),
       updatedAt: new Date(),
     };

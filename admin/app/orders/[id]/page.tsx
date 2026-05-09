@@ -24,7 +24,7 @@ async function getOrderDetails(id: string) {
     .select({
       id: schema.orderItems.id,
       quantity: schema.orderItems.quantity,
-      price: schema.orderItems.price,
+      price: schema.orderItems.unitPrice,
       productId: schema.orderItems.productId,
       productName: schema.products.name,
       productEmoji: schema.products.emoji,
@@ -60,8 +60,9 @@ const paymentStatusColors = {
   refunded: 'bg-orange-100 text-orange-800',
 };
 
-export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
-  const order = await getOrderDetails(params.id);
+export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const order = await getOrderDetails(id);
 
   if (!order) {
     notFound();
@@ -77,12 +78,15 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
     }).format(new Date(date));
   };
 
-  // Parse JSON fields
-  const shippingAddress = order.shippingAddress ? JSON.parse(order.shippingAddress as string) : null;
+  // Address is stored as JSON in deliveryInstructions (shippingAddress column unused)
+  const shippingAddress = order.deliveryInstructions
+    ? (() => { try { return JSON.parse(order.deliveryInstructions as string) } catch { return null } })()
+    : null;
   const paymentMethod = order.paymentMethod ? JSON.parse(order.paymentMethod as string) : null;
 
   // Convert string amounts to numbers
   const subtotal = parseFloat(order.subtotal || '0');
+  const discount = parseFloat(order.discount || '0');
   const tax = parseFloat(order.tax || '0');
   const shipping = parseFloat(order.deliveryFee || '0');
   const total = parseFloat(order.total || '0');
@@ -149,6 +153,12 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                 <span className="text-slate-600">Subtotal</span>
                 <span className="font-medium text-slate-900">${subtotal.toFixed(2)}</span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-emerald-600 font-medium">Discount</span>
+                  <span className="font-medium text-emerald-600">−${discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Tax</span>
                 <span className="font-medium text-slate-900">${tax.toFixed(2)}</span>
@@ -249,10 +259,10 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                   <div className="text-slate-600">{formatDate(order.confirmedAt)}</div>
                 </div>
               )}
-              {order.deliveredAt && (
+              {order.completedAt && (
                 <div>
-                  <div className="font-medium text-slate-900">Delivered</div>
-                  <div className="text-slate-600">{formatDate(order.deliveredAt)}</div>
+                  <div className="font-medium text-slate-900">Completed</div>
+                  <div className="text-slate-600">{formatDate(order.completedAt)}</div>
                 </div>
               )}
             </div>

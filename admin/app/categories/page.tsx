@@ -2,6 +2,7 @@ import { getDb, schema } from '@tayo/database';
 import { eq, count } from 'drizzle-orm';
 import Link from 'next/link';
 import { deleteCategory } from './actions';
+import { PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default async function CategoriesPage() {
   const db = getDb();
@@ -15,7 +16,6 @@ export default async function CategoriesPage() {
       return { id: c.id, count: result.count };
     })
   );
-
   const countMap = Object.fromEntries(
     productCounts
       .filter((r): r is PromiseFulfilledResult<{ id: string; count: number }> => r.status === 'fulfilled')
@@ -23,42 +23,66 @@ export default async function CategoriesPage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Categories</h1>
-        <Link href="/categories/new" className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+    <div>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Categories</h1>
+          <p className="page-subtitle">{categories.length} categories</p>
+        </div>
+        <Link href="/categories/new" className="btn btn-primary">
+          <PlusIcon style={{ width: 16, height: 16 }} />
           New Category
         </Link>
       </div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-left">
-            <th className="pb-2">Name</th>
-            <th className="pb-2">Slug</th>
-            <th className="pb-2">Products</th>
-            <th className="pb-2">Order</th>
-            <th className="pb-2">Active</th>
-            <th className="pb-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((c) => (
-            <tr key={c.id} className="border-b">
-              <td className="py-3 font-medium">{c.name}</td>
-              <td className="py-3 text-gray-500">{c.slug}</td>
-              <td className="py-3">{countMap[c.id] ?? 0}</td>
-              <td className="py-3">{c.sortOrder}</td>
-              <td className="py-3">{c.isActive ? '✓' : '—'}</td>
-              <td className="py-3 flex gap-3">
-                <Link href={`/categories/${c.id}/edit`} className="text-blue-600 hover:underline">Edit</Link>
-                <form action={deleteCategory.bind(null, c.id)}>
-                  <button type="submit" className="text-red-600 hover:underline">Delete</button>
-                </form>
-              </td>
+
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Slug</th>
+              <th>Products</th>
+              <th>Order</th>
+              <th>Status</th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {categories.map((c) => (
+              <tr key={c.id}>
+                <td style={{ fontWeight: 600, color: 'var(--text)' }}>{c.name}</td>
+                <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{c.slug}</td>
+                <td>
+                  <span className="badge badge-neutral">{countMap[c.id] ?? 0} products</span>
+                </td>
+                <td>{c.sortOrder}</td>
+                <td>
+                  {c.isActive
+                    ? <span className="badge badge-success">Active</span>
+                    : <span className="badge badge-neutral">Inactive</span>}
+                </td>
+                <td>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <Link href={`/categories/${c.id}/edit`} className="btn btn-secondary btn-sm">
+                      <PencilSquareIcon style={{ width: 14, height: 14 }} />
+                      Edit
+                    </Link>
+                    <form action={deleteCategory.bind(null, c.id)}>
+                      <button type="submit" className="btn btn-danger btn-sm">
+                        <TrashIcon style={{ width: 14, height: 14 }} />
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {categories.length === 0 && (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No categories yet</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
