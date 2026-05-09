@@ -4,6 +4,7 @@ import { ChevronDownIcon } from '@heroicons/react/16/solid'
 import { ShoppingBagIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useCart } from '@/app/context/CartContext'
+import { TAX_RATE } from '@/lib/constants'
 import { Container } from '@/components/Container'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
@@ -133,17 +134,21 @@ export default function CartPage() {
                               </dd>
                             </div>
                             <div className="flex items-center justify-between py-4">
-                              <dt className="text-foreground/60">Tax (10%)</dt>
+                              <dt className="text-foreground/60">
+                                Tax (
+                                {(TAX_RATE * 100).toFixed(0)}
+                                %)
+                              </dt>
                               <dd className="font-medium text-charcoal">
                                 $
-                                {(subtotal * 0.1).toFixed(2)}
+                                {(subtotal * TAX_RATE).toFixed(2)}
                               </dd>
                             </div>
                             <div className="flex items-center justify-between py-4">
                               <dt className="text-base font-semibold text-charcoal">Order total</dt>
                               <dd className="text-base font-semibold text-charcoal">
                                 $
-                                {(subtotal * 1.1).toFixed(2)}
+                                {(subtotal * (1 + TAX_RATE)).toFixed(2)}
                               </dd>
                             </div>
                           </dl>

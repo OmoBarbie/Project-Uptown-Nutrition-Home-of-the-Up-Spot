@@ -68,7 +68,13 @@ export async function markReviewHelpful(reviewId: string, isHelpful: boolean) {
     })
 
     if (existing) {
-      await db.update(schema.reviewHelpful).set({ isHelpful }).where(eq(schema.reviewHelpful.id, existing.id))
+      if (existing.isHelpful !== isHelpful) {
+        await db.update(schema.reviewHelpful).set({ isHelpful }).where(eq(schema.reviewHelpful.id, existing.id))
+        const delta = isHelpful ? 1 : -1
+        await db.update(schema.reviews)
+          .set({ helpfulCount: sql`${schema.reviews.helpfulCount} + ${delta}` })
+          .where(eq(schema.reviews.id, reviewId))
+      }
     }
     else {
       await db.insert(schema.reviewHelpful).values({ reviewId, userId: session.user.id, isHelpful })
@@ -77,7 +83,13 @@ export async function markReviewHelpful(reviewId: string, isHelpful: boolean) {
       }
     }
 
-    revalidatePath(`/products/[id]`, 'page')
+    const review = await db.query.reviews.findFirst({
+      where: eq(schema.reviews.id, reviewId),
+      columns: { productId: true },
+    })
+    if (review) {
+      revalidatePath(`/products/${review.productId}`)
+    }
     return { success: true }
   }
   catch {

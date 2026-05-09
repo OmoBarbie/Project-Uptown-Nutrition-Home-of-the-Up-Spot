@@ -5,6 +5,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useCart } from '@/app/context/CartContext'
+import { TAX_RATE } from '@/lib/constants'
 import { useMounted } from '@/app/hooks/use-mounted'
 import { Container } from '@/components/Container'
 import { Footer } from '@/components/Footer'
@@ -62,7 +63,7 @@ export default function CheckoutPage() {
   if (optimisticItems.length === 0)
     return null
 
-  const tax = subtotal * 0.08
+  const tax = subtotal * TAX_RATE
   const deliveryFee = 0
   const afterDiscount = Math.max(0, subtotal - discount)
   const baseTotal = afterDiscount + tax + deliveryFee
