@@ -1,4 +1,5 @@
 import { getDb, schema } from '@tayo/database';
+import { p } from '@setemiojo/utils';
 import { eq, count } from 'drizzle-orm';
 import Link from 'next/link';
 import { deleteCategory } from './actions';
@@ -10,17 +11,11 @@ export default async function CategoriesPage() {
     orderBy: (c, { asc }) => [asc(c.sortOrder)],
   });
 
-  const productCounts = await Promise.allSettled(
-    categories.map(async (c) => {
-      const [result] = await db.select({ count: count() }).from(schema.products).where(eq(schema.products.categoryId, c.id));
-      return { id: c.id, count: result.count };
-    })
-  );
-  const countMap = Object.fromEntries(
-    productCounts
-      .filter((r): r is PromiseFulfilledResult<{ id: string; count: number }> => r.status === 'fulfilled')
-      .map((r) => [r.value.id, r.value.count])
-  );
+  const productCounts = await p(categories, { concurrency: 5 }).map(async (c) => {
+    const [result] = await db.select({ count: count() }).from(schema.products).where(eq(schema.products.categoryId, c.id));
+    return { id: c.id, count: result.count };
+  });
+  const countMap = Object.fromEntries(productCounts.map(c => [c.id, c.count]));
 
   return (
     <div>

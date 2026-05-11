@@ -2,7 +2,7 @@
 
 import { getDb, schema } from '@tayo/database'
 import { sendOrderConfirmation } from '@tayo/email'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Stripe from 'stripe'
@@ -76,13 +76,28 @@ export async function createPaymentIntent(
       return { success: false, errors }
     }
 
+    const db = getDb()
+
     // Calculate total from database cart items
     const subtotal = dbCartItems.reduce((sum: number, item: any) => {
       const price = Number.parseFloat(item.product.price)
       return sum + price * item.quantity
     }, 0)
 
-    const discountRaw = Number.parseFloat((formData.get('discount') as string) ?? '0') || 0
+    // Re-validate coupon server-side — never trust client-supplied discount amounts
+    const couponCode = (formData.get('couponCode') as string | null)?.trim().toUpperCase() ?? ''
+    let discountRaw = 0
+    if (couponCode) {
+      const coupon = await db.query.coupons.findFirst({
+        where: and(eq(schema.coupons.code, couponCode), eq(schema.coupons.isActive, true)),
+      })
+      if (coupon) {
+        const couponValue = Number.parseFloat(coupon.value)
+        discountRaw = coupon.type === 'percentage'
+          ? Math.round(subtotal * couponValue) / 100
+          : couponValue
+      }
+    }
     const tax = subtotal * 0.08
     const deliveryFee = 0
     const afterDiscount = Math.max(0, subtotal - discountRaw)
@@ -106,7 +121,6 @@ export async function createPaymentIntent(
     })
 
     // Create pending order in database
-    const db = getDb()
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`
 
     const [order] = await db.insert(schema.orders).values({

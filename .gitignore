@@ -153,4 +153,10 @@ database/drizzle/
 .worktrees/
 
 docs/
+!docs/agents/
+!docs/agents/**
+!docs/superpowers/
+!docs/superpowers/**
+!docs/adr/
+!docs/adr/**
 .partykit/
