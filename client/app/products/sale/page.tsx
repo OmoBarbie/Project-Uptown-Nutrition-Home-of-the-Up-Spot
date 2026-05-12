@@ -1,5 +1,5 @@
 import { getDb, schema } from '@tayo/database'
-import { and, eq, isNotNull } from 'drizzle-orm'
+import { and, eq, gt, isNotNull } from 'drizzle-orm'
 import Link from 'next/link'
 import { Container } from '@/components/Container'
 import { Footer } from '@/components/Footer'
@@ -14,7 +14,11 @@ export const metadata = {
 export default async function SalePage() {
   const db = getDb()
   const products = await db.query.products.findMany({
-    where: and(eq(schema.products.isActive, true), isNotNull(schema.products.compareAtPrice)),
+    where: and(
+      eq(schema.products.isActive, true),
+      isNotNull(schema.products.compareAtPrice),
+      gt(schema.products.compareAtPrice, schema.products.price),
+    ),
     with: { category: true },
     orderBy: (p, { desc }) => [desc(p.isFeatured)],
   })
