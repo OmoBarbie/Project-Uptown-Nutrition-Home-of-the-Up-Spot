@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { OrderStatusForm } from './order-status-form';
 import { RefundButton } from './refund-button';
+import { CashPaymentButton } from './cash-payment-button';
 
 async function getOrderDetails(id: string) {
   const db = getDb();
@@ -214,6 +215,15 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Cash payment confirmation */}
+          {order.paymentMethod === 'cash' && order.paymentStatus !== 'succeeded' && (
+            <div className="bg-amber-50 shadow-sm ring-1 ring-amber-200 rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-slate-900 mb-1">Cash / Bank Transfer</h2>
+              <p className="text-sm text-slate-600 mb-4">Confirm that payment has been received in person or via bank transfer.</p>
+              <CashPaymentButton orderId={order.id} />
+            </div>
+          )}
+
           {/* Update Status */}
           <div className="bg-white shadow-sm ring-1 ring-slate-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">Update Order Status</h2>
