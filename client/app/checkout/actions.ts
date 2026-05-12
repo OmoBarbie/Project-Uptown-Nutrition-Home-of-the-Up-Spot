@@ -46,7 +46,7 @@ export async function createPaymentIntent(
 
     const db = getDb()
     const dbUser = await db.query.users.findFirst({ where: eq(schema.users.id, session.user.id), columns: { isBanned: true } })
-    if (dbUser?.isBanned) {
+    if (!dbUser || dbUser.isBanned) {
       return { success: false, message: 'Your account has been suspended. Please contact us for assistance.' }
     }
 
