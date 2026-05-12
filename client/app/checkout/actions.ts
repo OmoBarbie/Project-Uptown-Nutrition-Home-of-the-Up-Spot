@@ -44,6 +44,12 @@ export async function createPaymentIntent(
       }
     }
 
+    const db = getDb()
+    const dbUser = await db.query.users.findFirst({ where: eq(schema.users.id, session.user.id), columns: { isBanned: true } })
+    if (!dbUser || dbUser.isBanned) {
+      return { success: false, message: 'Your account has been suspended. Please contact us for assistance.' }
+    }
+
     // Get form data
     const name = formData.get('name') as string
     const email = formData.get('email') as string
@@ -75,8 +81,6 @@ export async function createPaymentIntent(
     if (Object.keys(errors).length > 0) {
       return { success: false, errors }
     }
-
-    const db = getDb()
 
     // Calculate total from database cart items
     const subtotal = dbCartItems.reduce((sum: number, item: any) => {
