@@ -17,6 +17,10 @@ export async function submitReview(productId: string, data: {
   if (!session)
     return { error: 'You must be logged in to leave a review' }
 
+  const dbUser = await db.query.users.findFirst({ where: eq(schema.users.id, session.user.id), columns: { isBanned: true } })
+  if (dbUser?.isBanned)
+    return { error: 'Your account has been suspended.' }
+
   if (data.rating < 1 || data.rating > 5)
     return { error: 'Invalid rating' }
   if (data.comment.trim().length < 20)
