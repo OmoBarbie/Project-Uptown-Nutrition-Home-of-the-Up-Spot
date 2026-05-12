@@ -1,5 +1,5 @@
 import { getDb, schema } from '@tayo/database'
-import { and, desc, eq, inArray, sum } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, sum } from 'drizzle-orm'
 import Link from 'next/link'
 import { Container } from '@/components/Container'
 import { Footer } from '@/components/Footer'
@@ -38,7 +38,7 @@ export default async function BestSellersPage() {
       eq(schema.products.isActive, true),
     ))
     .groupBy(schema.products.id, schema.categories.id)
-    .orderBy(desc(totalSold))
+    .orderBy(desc(totalSold), asc(schema.products.name))
     .limit(20)
 
   return (
@@ -75,7 +75,7 @@ export default async function BestSellersPage() {
                     </div>
                     <h3 className="text-sm font-medium text-charcoal text-center">{product.name}</h3>
                     <p className="mt-1 text-xs text-charcoal/60 text-center uppercase tracking-wide">{product.categoryName}</p>
-                    <p className="mt-3 font-display text-lg text-charcoal text-center">${product.price}</p>
+                    <p className="mt-3 font-display text-lg text-charcoal text-center">${Number(product.price).toFixed(2)}</p>
                     <p className="mt-1 text-xs text-charcoal/40 text-center">{product.totalSold} sold</p>
                   </Link>
                 </article>

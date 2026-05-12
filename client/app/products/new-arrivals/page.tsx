@@ -53,7 +53,7 @@ export default async function NewArrivalsPage() {
                     </div>
                     <h3 className="text-sm font-medium text-charcoal text-center">{product.name}</h3>
                     <p className="mt-1 text-xs text-charcoal/60 text-center uppercase tracking-wide">{product.category.name}</p>
-                    <p className="mt-3 font-display text-lg text-charcoal text-center">${product.price}</p>
+                    <p className="mt-3 font-display text-lg text-charcoal text-center">${Number(product.price).toFixed(2)}</p>
                     <p className="mt-1 text-xs text-charcoal/40 text-center">
                       Added {product.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>

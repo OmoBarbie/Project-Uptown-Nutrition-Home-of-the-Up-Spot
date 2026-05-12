@@ -55,8 +55,8 @@ export default async function SalePage() {
                     <h3 className="text-sm font-medium text-charcoal text-center">{product.name}</h3>
                     <p className="mt-1 text-xs text-charcoal/60 text-center uppercase tracking-wide">{product.category.name}</p>
                     <div className="mt-3 text-center">
-                      <span className="text-charcoal/40 line-through text-sm mr-2">${product.compareAtPrice}</span>
-                      <span className="font-display text-lg text-terracotta-600">${product.price}</span>
+                      <span className="text-charcoal/40 line-through text-sm mr-2">${Number(product.compareAtPrice).toFixed(2)}</span>
+                      <span className="font-display text-lg text-terracotta-600">${Number(product.price).toFixed(2)}</span>
                     </div>
                   </Link>
                 </article>
