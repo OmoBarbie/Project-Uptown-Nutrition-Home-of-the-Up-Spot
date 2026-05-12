@@ -25,27 +25,27 @@ function SocialIconFacebook(props: React.ComponentPropsWithoutRef<'svg'>) {
 const footerLinks = {
   Shop: [
     { label: 'All Products', href: '/products' },
-    { label: 'New Arrivals', href: '/products' },
-    { label: 'Best Sellers', href: '/products' },
-    { label: 'Sale', href: '/products' },
+    { label: 'New Arrivals', href: '/products/new-arrivals' },
+    { label: 'Best Sellers', href: '/products/best-sellers' },
+    { label: 'Sale', href: '/products/sale' },
   ],
   Company: [
     { label: 'About Us', href: '/about' },
-    { label: 'Our Story', href: '/about' },
+    { label: 'Our Story', href: '/our-story' },
     { label: 'The Up Spot', href: '/upspot' },
     { label: 'Contact', href: '/contact' },
   ],
   Support: [
-    { label: 'Help Center', href: '#' },
-    { label: 'Shipping Info', href: '#' },
-    { label: 'Returns', href: '#' },
+    { label: 'Help Center', href: '/help' },
+    { label: 'Shipping Info', href: '/shipping-info' },
+    { label: 'Returns', href: '/returns' },
     { label: 'Contact Us', href: '/contact' },
   ],
   Legal: [
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
-    { label: 'Cookie Policy', href: '#' },
-    { label: 'Accessibility', href: '#' },
+    { label: 'Privacy Policy', href: '/privacy-policy' },
+    { label: 'Terms of Service', href: '/terms-of-service' },
+    { label: 'Cookie Policy', href: '/cookie-policy' },
+    { label: 'Accessibility', href: '/accessibility' },
   ],
 }
 
