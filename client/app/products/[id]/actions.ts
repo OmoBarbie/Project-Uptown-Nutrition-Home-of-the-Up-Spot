@@ -1,7 +1,7 @@
 'use server'
 
 import { getDb, schema } from '@tayo/database'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
@@ -28,18 +28,25 @@ export async function submitReview(productId: string, data: {
   if (existing)
     return { error: 'You have already reviewed this product' }
 
-  const verifiedOrder = await db.query.orderItems.findFirst({
-    with: {
-      order: {
-        columns: { status: true, userId: true },
-      },
-    },
-    where: eq(schema.orderItems.productId, productId),
+  const purchasedOrder = await db.query.orderItems.findFirst({
+    with: { order: { columns: { status: true, userId: true } } },
+    where: and(
+      eq(schema.orderItems.productId, productId),
+      inArray(schema.orderItems.orderId,
+        db.select({ id: schema.orders.id })
+          .from(schema.orders)
+          .where(and(
+            eq(schema.orders.userId, session.user.id),
+            inArray(schema.orders.status, ['confirmed', 'preparing', 'ready_for_pickup', 'delivered', 'completed']),
+          )),
+      ),
+    ),
   })
 
-  const isVerifiedPurchase = !!verifiedOrder
-    && verifiedOrder.order.userId === session.user.id
-    && verifiedOrder.order.status === 'completed'
+  if (!purchasedOrder)
+    return { error: 'You can only review products you have purchased.' }
+
+  const isVerifiedPurchase = purchasedOrder.order.status === 'completed'
 
   await db.insert(schema.reviews).values({
     productId,
