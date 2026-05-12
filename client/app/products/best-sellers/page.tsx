@@ -1,5 +1,5 @@
 import { getDb, schema } from '@tayo/database'
-import { and, desc, eq, inArray, sql, sum } from 'drizzle-orm'
+import { and, desc, eq, inArray, sum } from 'drizzle-orm'
 import Link from 'next/link'
 import { Container } from '@/components/Container'
 import { Footer } from '@/components/Footer'
@@ -11,36 +11,35 @@ export const metadata = {
   alternates: { canonical: '/products/best-sellers' },
 }
 
+export const revalidate = 3600
+
 const QUALIFYING_STATUSES = ['confirmed', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered', 'completed'] as const
 
 export default async function BestSellersPage() {
   const db = getDb()
 
-  // Aggregate total units sold per product from qualifying orders
-  const salesByProduct = await db
+  const totalSold = sum(schema.orderItems.quantity).mapWith(Number)
+
+  const rows = await db
     .select({
-      productId: schema.orderItems.productId,
-      totalSold: sum(schema.orderItems.quantity).mapWith(Number),
+      id: schema.products.id,
+      name: schema.products.name,
+      price: schema.products.price,
+      emoji: schema.products.emoji,
+      categoryName: schema.categories.name,
+      totalSold,
     })
     .from(schema.orderItems)
     .innerJoin(schema.orders, eq(schema.orderItems.orderId, schema.orders.id))
-    .where(inArray(schema.orders.status, [...QUALIFYING_STATUSES]))
-    .groupBy(schema.orderItems.productId)
-    .orderBy(desc(sql`sum(${schema.orderItems.quantity})`))
+    .innerJoin(schema.products, eq(schema.orderItems.productId, schema.products.id))
+    .innerJoin(schema.categories, eq(schema.products.categoryId, schema.categories.id))
+    .where(and(
+      inArray(schema.orders.status, [...QUALIFYING_STATUSES]),
+      eq(schema.products.isActive, true),
+    ))
+    .groupBy(schema.products.id, schema.categories.id)
+    .orderBy(desc(totalSold))
     .limit(20)
-
-  const productIds = salesByProduct.map(r => r.productId)
-
-  const products = productIds.length > 0
-    ? await db.query.products.findMany({
-        where: and(eq(schema.products.isActive, true), inArray(schema.products.id, productIds)),
-        with: { category: true },
-      })
-    : []
-
-  // Re-sort to match aggregation order
-  const salesMap = new Map(salesByProduct.map(r => [r.productId, r.totalSold]))
-  const sorted = products.sort((a, b) => (salesMap.get(b.id) ?? 0) - (salesMap.get(a.id) ?? 0))
 
   return (
     <>
@@ -58,28 +57,26 @@ export default async function BestSellersPage() {
             </p>
           </div>
 
-          {sorted.length === 0 ? (
+          {rows.length === 0 ? (
             <div className="text-center py-24 border border-sand">
               <p className="text-charcoal/60">No sales data yet — be the first to order.</p>
               <Link href="/products" className="mt-4 inline-block text-sm font-medium text-forest-600 hover:underline">Browse the full menu</Link>
             </div>
           ) : (
             <div className="-mx-px grid grid-cols-2 border-l border-sand sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
-              {sorted.map((product, i) => (
+              {rows.map((product, i) => (
                 <article key={product.id} className="border-r border-b border-sand p-4 sm:p-6 hover:bg-cream-50 transition-colors">
                   <Link href={`/products/${product.id}`} className="block">
                     <div className="aspect-square bg-sand/30 flex items-center justify-center text-6xl mb-4 relative">
                       {product.emoji ?? '🥤'}
-                      {i < 3 && (
-                        <span className="absolute top-2 left-2 text-xs font-bold bg-terracotta-500 text-cream px-1.5 py-0.5">
-                          #{i + 1}
-                        </span>
-                      )}
+                      {i === 0 && <span className="absolute top-2 left-2 text-xs font-bold bg-yellow-400 text-yellow-900 px-1.5 py-0.5">#1</span>}
+                      {i === 1 && <span className="absolute top-2 left-2 text-xs font-bold bg-slate-300 text-slate-800 px-1.5 py-0.5">#2</span>}
+                      {i === 2 && <span className="absolute top-2 left-2 text-xs font-bold bg-amber-600 text-white px-1.5 py-0.5">#3</span>}
                     </div>
                     <h3 className="text-sm font-medium text-charcoal text-center">{product.name}</h3>
-                    <p className="mt-1 text-xs text-charcoal/60 text-center uppercase tracking-wide">{product.category.name}</p>
+                    <p className="mt-1 text-xs text-charcoal/60 text-center uppercase tracking-wide">{product.categoryName}</p>
                     <p className="mt-3 font-display text-lg text-charcoal text-center">${product.price}</p>
-                    <p className="mt-1 text-xs text-charcoal/40 text-center">{salesMap.get(product.id) ?? 0} sold</p>
+                    <p className="mt-1 text-xs text-charcoal/40 text-center">{product.totalSold} sold</p>
                   </Link>
                 </article>
               ))}
