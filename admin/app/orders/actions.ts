@@ -8,6 +8,39 @@ import { headers } from 'next/headers';
 import { createAuditLog } from '@/lib/audit';
 import { sendOrderStatusUpdate } from '@tayo/email';
 
+export async function markCashPaymentReceived(orderId: string): Promise<{ success: boolean; message: string }> {
+  const headersList = await headers();
+  const session = await auth.api.getSession({ headers: headersList });
+  if (!session?.user || !['admin', 'super_admin'].includes((session.user as { role?: string }).role ?? '')) {
+    return { success: false, message: 'Unauthorized' };
+  }
+
+  const db = getDb();
+  const order = await db.query.orders.findFirst({ where: eq(schema.orders.id, orderId) });
+  if (!order) return { success: false, message: 'Order not found' };
+  if (order.paymentMethod !== 'cash') return { success: false, message: 'Only cash orders can be confirmed this way' };
+  if (order.paymentStatus === 'succeeded') return { success: false, message: 'Payment already confirmed' };
+
+  await db.update(schema.orders).set({
+    paymentStatus: 'succeeded',
+    status: 'confirmed',
+    confirmedAt: new Date(),
+    updatedAt: new Date(),
+  }).where(eq(schema.orders.id, orderId));
+
+  await createAuditLog(session.user.id, {
+    action: 'update',
+    entityType: 'order',
+    entityId: orderId,
+    changes: { before: { paymentStatus: order.paymentStatus }, after: { paymentStatus: 'succeeded', status: 'confirmed' } },
+    metadata: { orderNumber: order.orderNumber },
+  });
+
+  revalidatePath(`/orders/${orderId}`);
+  revalidatePath('/orders');
+  return { success: true, message: 'Payment confirmed — order marked as confirmed' };
+}
+
 export type OrderStatusFormState = {
   success?: boolean;
   message?: string;
