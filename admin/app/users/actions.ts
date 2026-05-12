@@ -26,11 +26,34 @@ export async function updateUserRole(userId: string, formData: FormData) {
   revalidatePath('/users');
 }
 
+export async function updateUserEmail(userId: string, formData: FormData) {
+  const email = (formData.get('email') as string | null)?.trim().toLowerCase()
+  if (!email || !email.includes('@')) throw new Error('Invalid email')
+
+  const db = getDb()
+  const headersList = await headers()
+  const session = await auth.api.getSession({ headers: headersList })
+  if (!session?.user || !['admin', 'super_admin'].includes((session.user as { role?: string }).role ?? '')) {
+    throw new Error('Unauthorized')
+  }
+
+  await db.update(schema.users).set({ email, updatedAt: new Date() }).where(eq(schema.users.id, userId))
+  await createAuditLog(session.user.id, {
+    action: 'update',
+    entityType: 'user',
+    entityId: userId,
+    changes: { after: { email } },
+  })
+  revalidatePath(`/users/${userId}`)
+}
+
 export async function toggleBan(userId: string, isBanned: boolean) {
   const db = getDb();
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });
-  if (!session) throw new Error('Unauthorized');
+  if (!session?.user || !['admin', 'super_admin'].includes((session.user as { role?: string }).role ?? '')) {
+    throw new Error('Unauthorized');
+  }
 
   await db.update(schema.users).set({ isBanned, updatedAt: new Date() }).where(eq(schema.users.id, userId));
   await createAuditLog(session.user.id, {

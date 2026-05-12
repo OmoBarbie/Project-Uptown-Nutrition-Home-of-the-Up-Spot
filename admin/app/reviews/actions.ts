@@ -55,7 +55,7 @@ export async function approveReview(reviewId: string) {
   const db = getDb();
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });
-  if (!session?.user || (session.user as { role?: string }).role !== 'admin') {
+  if (!session?.user || !['admin', 'super_admin'].includes((session.user as { role?: string }).role ?? '')) {
     throw new Error('Unauthorized');
   }
 
@@ -77,7 +77,7 @@ export async function rejectReview(reviewId: string) {
   const db = getDb();
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });
-  if (!session?.user || (session.user as { role?: string }).role !== 'admin') {
+  if (!session?.user || !['admin', 'super_admin'].includes((session.user as { role?: string }).role ?? '')) {
     throw new Error('Unauthorized');
   }
 
@@ -96,7 +96,7 @@ export async function featureReview(reviewId: string, isFeatured: boolean) {
   const db = getDb();
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });
-  if (!session?.user || (session.user as { role?: string }).role !== 'admin') {
+  if (!session?.user || !['admin', 'super_admin'].includes((session.user as { role?: string }).role ?? '')) {
     throw new Error('Unauthorized');
   }
 
@@ -115,7 +115,7 @@ export async function bulkApproveReviews(reviewIds: string[]) {
   const db = getDb();
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });
-  if (!session?.user || (session.user as { role?: string }).role !== 'admin') {
+  if (!session?.user || !['admin', 'super_admin'].includes((session.user as { role?: string }).role ?? '')) {
     throw new Error('Unauthorized');
   }
 
