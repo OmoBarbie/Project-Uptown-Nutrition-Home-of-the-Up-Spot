@@ -12,7 +12,7 @@ function getIp(req: NextRequest): string {
   )
 }
 
-export async function proxy(request: NextRequest) {
+async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const ip = getIp(request)
 
@@ -37,10 +37,10 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Auth guard for protected routes
+  // Auth guard for protected routes — cookie prefix must match auth.ts cookiePrefix
   const isProtectedRoute = protectedRoutes.some(r => pathname.startsWith(r))
   if (isProtectedRoute) {
-    const sessionToken = request.cookies.get('better-auth.session_token')?.value
+    const sessionToken = request.cookies.get('tayo-client.session_token')?.value
     if (!sessionToken) {
       const url = new URL('/login', request.url)
       url.searchParams.set('callbackUrl', pathname)
@@ -50,6 +50,8 @@ export async function proxy(request: NextRequest) {
 
   return NextResponse.next()
 }
+
+export default middleware
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],

@@ -63,16 +63,16 @@ export async function authMiddleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Check if user has admin role
+    // Check if user has admin or super_admin role
     const user = session.user as { role?: string };
-    if (user.role !== "admin") {
+    if (user.role !== "admin" && user.role !== "super_admin") {
       return NextResponse.json(
         { error: "Unauthorized. Admin access required." },
         { status: 403 }
       );
     }
 
-    // User is authenticated and has admin role
+    // User is authenticated and has admin or super_admin role
     return NextResponse.next();
   } catch (error) {
     console.error("Auth middleware error:", error);
