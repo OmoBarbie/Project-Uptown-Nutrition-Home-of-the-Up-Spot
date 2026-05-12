@@ -37,7 +37,7 @@ export async function submitReview(productId: string, data: {
           .from(schema.orders)
           .where(and(
             eq(schema.orders.userId, session.user.id),
-            inArray(schema.orders.status, ['confirmed', 'preparing', 'ready_for_pickup', 'delivered', 'completed']),
+            inArray(schema.orders.status, ['confirmed', 'preparing', 'ready_for_pickup', 'out_for_delivery', 'delivered', 'completed']),
           )),
       ),
     ),
@@ -51,6 +51,7 @@ export async function submitReview(productId: string, data: {
   await db.insert(schema.reviews).values({
     productId,
     userId: session.user.id,
+    orderId: purchasedOrder.orderId,
     rating: data.rating,
     title: data.title.trim() || null,
     comment: data.comment.trim(),
